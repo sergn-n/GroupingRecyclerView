@@ -17,9 +17,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import ru.ncom.recyclerview.Model.Movie;
-import ru.ncom.recyclerview.Model.MovieDb;
-import ru.ncom.recyclerview.Model.Titled;
+import ru.ncom.recyclerview.adapter.MoviesAdapter;
+import ru.ncom.recyclerview.adapter.TitledViewHolder;
+import ru.ncom.recyclerview.model.Movie;
+import ru.ncom.recyclerview.model.MovieDb;
+import ru.ncom.recyclerview.model.Titled;
 
 public class MainActivity extends AppCompatActivity
                        implements MovieDb.AsyncDbSort.ProgressListener {
@@ -212,5 +214,5 @@ public class MainActivity extends AppCompatActivity
 09-04 18:12:43.469 25032-25032/ru.ncom.recyclerview D/RecyclerTouchListener: onInterceptTouchEvent: child Class=android.widget.RelativeLayout
                                                                                        	, gestureDetector.onTouchEvent(e)=true
 09-04 18:12:43.479 25032-25032/ru.ncom.recyclerview D/ClickListener(Main): onClick:
-09-04 18:12:43.719 25032-25032/ru.ncom.recyclerview D/MyOnClickListener(Adpt): onClick: view Class=android.support.v7.widget.AppCompatTextView
+09-04 18:12:43.719 25032-25032/ru.ncom.recyclerview D/ToastOnClickListener(Adpt): onClick: view Class=android.support.v7.widget.AppCompatTextView
 */

@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview.Model;
+package ru.ncom.recyclerview.model;
 
 import android.os.AsyncTask;
 
@@ -92,6 +92,7 @@ public class MovieDb
                 curTitle= newTitle;
             }
             itemsList.add(m);
+
         }
     }
 
@@ -127,7 +128,7 @@ public class MovieDb
 
             }
             db.orderBy(params[0]);
-            publishProgress ("Sorted...");
+            publishProgress ("Sorted, notifying...");
             try {
                 Thread.sleep(5000);
             }

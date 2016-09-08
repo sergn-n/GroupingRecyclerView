@@ -1,17 +1,15 @@
-package ru.ncom.recyclerview;
+package ru.ncom.recyclerview.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
+import ru.ncom.recyclerview.R;
+
 public class MovieViewHolder extends RecyclerView.ViewHolder
         implements TitledViewHolder {
-    public TextView title, year, genre;
 
-    @Override
-    public TextView getTitleView() {
-        return title;
-    }
+    public TextView title, year, genre;
 
     public MovieViewHolder(View view, View.OnClickListener onClickListener) {
         super(view);
@@ -20,6 +18,11 @@ public class MovieViewHolder extends RecyclerView.ViewHolder
         year = (TextView) view.findViewById(R.id.year);
         // genre and year are declared clickable in XML;
         year.setOnClickListener(onClickListener);
+    }
+
+    @Override
+    public TextView getTitleView() {
+        return title;
     }
 }
 

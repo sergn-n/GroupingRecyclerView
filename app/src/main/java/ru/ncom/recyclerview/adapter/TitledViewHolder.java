@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview;
+package ru.ncom.recyclerview.adapter;
 
 import android.widget.TextView;
 

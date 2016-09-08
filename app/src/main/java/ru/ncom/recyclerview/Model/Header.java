@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview.Model;
+package ru.ncom.recyclerview.model;
 
 /**
  * Created by gerg on 08.09.2016.

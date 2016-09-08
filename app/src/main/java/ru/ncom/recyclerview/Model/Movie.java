@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview.Model;
+package ru.ncom.recyclerview.model;
 
 import java.util.Comparator;
 

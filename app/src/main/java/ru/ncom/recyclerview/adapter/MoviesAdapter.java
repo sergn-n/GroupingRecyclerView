@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview;
+package ru.ncom.recyclerview.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,8 +11,9 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import ru.ncom.recyclerview.Model.Movie;
-import ru.ncom.recyclerview.Model.Titled;
+import ru.ncom.recyclerview.R;
+import ru.ncom.recyclerview.model.Movie;
+import ru.ncom.recyclerview.model.Titled;
 
 public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -20,20 +21,16 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public final int HEADERROW = 2;
 
     private List<Titled> moviesList;
-    // (1)
-    private RecyclerView  mRecyclerView;
-    //
+    private RecyclerView mRecyclerView;
 
     public MoviesAdapter(List<Titled> moviesList, RecyclerView rv) {
-        // (1)
+
         this.mRecyclerView = rv;
         this.moviesList = moviesList;
-        //
     }
 
-    // (1)
-    public class MyOnClickListener implements View.OnClickListener {
-        private final String TAG = "MyOnClickListener(Adpt)";
+    public class ToastOnClickListener implements View.OnClickListener {
+        private final String TAG = "ToastOnClickLstnr(Adpt)";
         @Override
         public void onClick(final View view) {
             String item = null;
@@ -48,7 +45,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-    private final View.OnClickListener mOnClickListener = new MyOnClickListener();
+    private final View.OnClickListener mOnClickListener = new ToastOnClickListener();
 
     @Override
     public int getItemViewType(int position) {
