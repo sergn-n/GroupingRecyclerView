@@ -1,11 +1,11 @@
-package ru.ncom.recyclerview;
+package ru.ncom.recyclerview.Model;
 
 import java.util.Comparator;
 
 /**
  * Created by Lincoln on 15/01/16.
  */
-public class Movie {
+public class Movie implements Titled {
     private String title, genre, year;
 
     public Movie() {
@@ -54,7 +54,8 @@ public class Movie {
         CompareBy mCby;
 
         /**
-         * Create a Comparator for the field
+         * Create a Comparator for the field.
+         * Additionaly ComparatorBy#getGroup returns grouping header
          * @param cby
          */
         public ComparatorBy(CompareBy cby){
@@ -72,6 +73,19 @@ public class Movie {
                     return lhs.getYear().compareTo(rhs.getYear());
                 default:
                     return 0;
+            }
+        }
+
+        public String getGroup (Movie m){
+            switch (mCby) {
+                case TITLE:
+                    return m.getTitle().substring(0,1);
+                case GENRE:
+                    return m.getGenre().substring(0,1);
+                case YEAR:
+                    return m.getYear().substring(0,3)+"0s";
+                default:
+                    return "";
             }
         }
 

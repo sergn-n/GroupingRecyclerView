@@ -11,27 +11,20 @@ import android.widget.Toast;
 
 import java.util.List;
 
-public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHolder> {
+import ru.ncom.recyclerview.Model.Movie;
+import ru.ncom.recyclerview.Model.Titled;
 
-    private List<Movie> moviesList;
+public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    public final int MOVIEROW = 1;
+    public final int HEADERROW = 2;
+
+    private List<Titled> moviesList;
     // (1)
     private RecyclerView  mRecyclerView;
     //
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, year, genre;
 
-        public MyViewHolder(View view) {
-            super(view);
-            title = (TextView) view.findViewById(R.id.title);
-            genre = (TextView) view.findViewById(R.id.genre);
-            year = (TextView) view.findViewById(R.id.year);
-            // genre and year are declared clickable in XML;
-            year.setOnClickListener(mOnClickListener);
-        }
-    }
-
-
-    public MoviesAdapter(List<Movie> moviesList, RecyclerView rv) {
+    public MoviesAdapter(List<Titled> moviesList, RecyclerView rv) {
         // (1)
         this.mRecyclerView = rv;
         this.moviesList = moviesList;
@@ -56,24 +49,41 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MyViewHold
     }
 
     private final View.OnClickListener mOnClickListener = new MyOnClickListener();
-    //
+
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.movie_list_row, parent, false);
-        //(1)
-        // itemView.setOnClickListener(mOnClickListener);
-        //
-        return new MyViewHolder(itemView);
+    public int getItemViewType(int position) {
+        if (moviesList.get(position) instanceof Movie)
+            return MOVIEROW;
+        return HEADERROW;
+    }
+
+
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View itemView = null;
+        switch (viewType) {
+            case MOVIEROW:
+                itemView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.movie_row, parent, false);
+                //itemView.setOnClickListener(mOnClickListener);
+                return new MovieViewHolder(itemView, mOnClickListener);
+            default:
+                itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.header_row, parent, false);
+                return new HeaderViewHolder(itemView);
+        }
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        Movie movie = moviesList.get(position);
-        holder.title.setText(movie.getTitle());
-        holder.genre.setText(movie.getGenre());
-        holder.year.setText(movie.getYear());
-    }
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        Titled item = moviesList.get(position);
+        if ((item instanceof Movie) && (holder instanceof MovieViewHolder)) {
+            MovieViewHolder vh = (MovieViewHolder)holder;
+            Movie m =  (Movie) item;
+            vh.genre.setText(m.getGenre());
+            vh.year.setText(m.getYear());
+        }
+        ((TitledViewHolder) holder).getTitleView().setText(item.getTitle());    }
 
     @Override
     public int getItemCount() {

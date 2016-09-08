@@ -17,6 +17,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import ru.ncom.recyclerview.Model.Movie;
+import ru.ncom.recyclerview.Model.MovieDb;
+import ru.ncom.recyclerview.Model.Titled;
+
 public class MainActivity extends AppCompatActivity
                        implements MovieDb.AsyncDbSort.ProgressListener {
 
@@ -96,9 +100,9 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view, int position) {
                 Log.d(TAG, "onClick: ");
                 // This titles may differ when adapter is not synchronized with db.
-                MoviesAdapter.MyViewHolder mvh = (MoviesAdapter.MyViewHolder) mRecyclerView.getChildViewHolder(view);
-                String viewTitle = (String)mvh.title.getText();
-                Movie movie = mMovieDb.getAt(position);
+                TitledViewHolder mvh = (TitledViewHolder) mRecyclerView.getChildViewHolder(view);
+                String viewTitle = (String)mvh.getTitleView().getText();
+                Titled movie = mMovieDb.getAt(position);
                 String dbTitle = movie.getTitle();
                 Toast.makeText(getApplicationContext()
                         , (viewTitle == dbTitle)

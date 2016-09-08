@@ -8,8 +8,8 @@ android {
         applicationId "ru.ncom.recyclerview"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 10005
-        versionName "1.0.005"
+        versionCode 10100
+        versionName "1.1.000"
     }
     buildTypes {
         release {
@@ -25,5 +25,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
-    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
+    //compile 'com.google.guava:guava:19.0'
 }

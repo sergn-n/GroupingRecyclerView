@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview;
+package ru.ncom.recyclerview.Model;
 
 import android.os.AsyncTask;
 
@@ -12,7 +12,10 @@ import java.util.List;
 
 public class MovieDb
 {
-    private List<Movie> movieList = new ArrayList<> ();
+    // Data
+    private List<Movie> movieList = new ArrayList<>();
+    // Represantation
+    private final List<Titled> itemsList = new ArrayList<>();
 
     public MovieDb() {
 
@@ -63,24 +66,43 @@ public class MovieDb
 
         movie = new Movie("Guardians of the Galaxy", "Science Fiction & Fantasy", "2014");
         movieList.add(movie);
+        itemsList.add((Titled)movie);
+
+        // initially it's just source data
+        for (int i = 0; i < movieList.size(); i++){
+            itemsList.add(movieList.get(i));
+        }
+
     }
 
-    public List<Movie> getMovieList() { return movieList;}
+    public List<Titled> getMovieList() { return itemsList;}
 
-    public Movie getAt(int position) {return movieList.get(position);}
+    public Titled getAt(int position) { return itemsList.get(position);}
 
     public void orderBy(Movie.ComparatorBy.CompareBy sortField) {
-        Collections.sort(movieList, new Movie.ComparatorBy(sortField));
+        Movie.ComparatorBy mcb =  new Movie.ComparatorBy(sortField);
+        Collections.sort(movieList,mcb);
+        String curTitle = null;
+        itemsList.clear();
+        for (int i = 0; i < movieList.size(); i++){
+            Movie m = movieList.get(i);
+            String newTitle = mcb.getGroup(m);
+            if (!newTitle.equals(curTitle)){
+                itemsList.add( new Header(newTitle));
+                curTitle= newTitle;
+            }
+            itemsList.add(m);
+        }
     }
 
 
     public void orderByAsync (Movie.ComparatorBy.CompareBy sortField, AsyncDbSort.ProgressListener progressView) {
-        (new AsyncDbSort(movieList, progressView)).execute(sortField);
+        (new AsyncDbSort(this, progressView)).execute(sortField);
 
     }
 
 
-    static class AsyncDbSort extends AsyncTask<Movie.ComparatorBy.CompareBy,String,String> {
+    public static class AsyncDbSort extends AsyncTask<Movie.ComparatorBy.CompareBy,String,String> {
 
         public interface ProgressListener{
             void onStart(String msg);
@@ -88,11 +110,11 @@ public class MovieDb
             void onDone(String msg);
         }
 
-        List<Movie> movieList2;
+        MovieDb db;
         ProgressListener progressListener;
 
-        public AsyncDbSort(List<Movie> ml, ProgressListener progressListener ){
-            this.movieList2 = ml;
+        public AsyncDbSort(MovieDb db, ProgressListener progressListener ){
+            this.db = db;
             this.progressListener = progressListener;
         }
 
@@ -104,7 +126,7 @@ public class MovieDb
             catch (InterruptedException e) {
 
             }
-            Collections.sort(movieList2, new Movie.ComparatorBy(params[0]));
+            db.orderBy(params[0]);
             publishProgress ("Sorted...");
             try {
                 Thread.sleep(5000);
