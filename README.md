@@ -5,4 +5,7 @@ Test Recylcer features:
   
   Data update in main thread;  
   
-  Asynchronous (AsyncTask) data update, sort.
+  Asynchronous (AsyncTask) data update.
+  
+  Sorting and grouping. Group headers are created according to the selected sort field with extended Comparator.
+  
