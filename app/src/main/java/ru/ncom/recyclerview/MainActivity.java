@@ -24,7 +24,7 @@ import ru.ncom.recyclerview.model.MovieDb;
 import ru.ncom.recyclerview.model.Titled;
 
 public class MainActivity extends AppCompatActivity
-                       implements MovieDb.AsyncDbSort.ProgressListener {
+                       implements MoviesAdapter.AsyncDbSort.ProgressListener {
 
     private MovieDb mMovieDb = new MovieDb();
     private RecyclerView mRecyclerView;
@@ -65,11 +65,10 @@ public class MainActivity extends AppCompatActivity
                     if (position > 1) {
                         // Use sync sort for GENRE and YEAR
                         mProgressView.setText(" Sync sort method.");
-                        mMovieDb.orderBy(sortField);
-                        mAdapter.notifyDataSetChanged();
+                        mAdapter.orderBy(sortField);
                     } else {
                         // Use async sort for TITLE
-                        mMovieDb.orderByAsync(sortField, MainActivity.this);
+                        mAdapter.orderByAsync(sortField, MainActivity.this);
                     }
                 }
             }
@@ -85,7 +84,7 @@ public class MainActivity extends AppCompatActivity
         // Set movie recycler
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
-        mAdapter = new MoviesAdapter(mMovieDb.getMovieList(), mRecyclerView);
+        mAdapter = new MoviesAdapter(mMovieDb, mRecyclerView);
 
         mRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -104,7 +103,7 @@ public class MainActivity extends AppCompatActivity
                 // This titles may differ when adapter is not synchronized with db.
                 TitledViewHolder mvh = (TitledViewHolder) mRecyclerView.getChildViewHolder(view);
                 String viewTitle = (String)mvh.getTitleView().getText();
-                Titled movie = mMovieDb.getAt(position);
+                Titled movie = mAdapter.getAt(position);
                 String dbTitle = movie.getTitle();
                 Toast.makeText(getApplicationContext()
                         , (viewTitle == dbTitle)

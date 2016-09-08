@@ -1,5 +1,6 @@
 package ru.ncom.recyclerview.adapter;
 
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,24 +10,123 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ru.ncom.recyclerview.R;
 import ru.ncom.recyclerview.model.Movie;
+import ru.ncom.recyclerview.model.MovieDb;
 import ru.ncom.recyclerview.model.Titled;
 
 public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public final int MOVIEROW = 1;
     public final int HEADERROW = 2;
+    // Represantation
 
-    private List<Titled> moviesList;
+    private final List<Titled> itemsList = new ArrayList<>();
+    private MovieDb mDb = null;
     private RecyclerView mRecyclerView;
 
-    public MoviesAdapter(List<Titled> moviesList, RecyclerView rv) {
+    public MoviesAdapter(MovieDb db, RecyclerView rv) {
 
         this.mRecyclerView = rv;
-        this.moviesList = moviesList;
+        this.mDb = db;
+        List<Movie> ml = mDb.getMovieList();
+        // initially it's just source data
+        for (int i = 0; i <ml.size(); i++){
+            itemsList.add(ml.get(i));
+        }
+    }
+
+    public Titled getAt(int position) {
+        return itemsList.get(position);
+    }
+
+    public void orderBy(Movie.ComparatorBy.CompareBy sortField) {
+        doOrder(sortField);
+        notifyDataSetChanged();
+    }
+
+    private void doOrder(Movie.ComparatorBy.CompareBy sortField) {
+        Movie.ComparatorBy mcb = new Movie.ComparatorBy(sortField);
+        List<Movie> ml = mDb.orderBy(mcb);
+        List<Movie> subml = null;
+        String oldTitle = null;
+        itemsList.clear();
+        for (int i = 0; i < ml.size(); i++) {
+            Movie m = ml.get(i);
+            String newTitle = mcb.getGroup(m);
+            if (!newTitle.equals(oldTitle)) {
+                Header h = new Header(newTitle);
+                subml = h.getMovieList();
+                itemsList.add(h);
+                oldTitle = newTitle;
+            }
+            itemsList.add(m);
+            subml.add(m);
+        }
+    }
+
+    public void orderByAsync (Movie.ComparatorBy.CompareBy sortField, AsyncDbSort.ProgressListener progressView) {
+        (new AsyncDbSort(this, progressView)).execute(sortField);
+
+    }
+
+
+    public static class AsyncDbSort extends AsyncTask<Movie.ComparatorBy.CompareBy,String,String> {
+
+        public interface ProgressListener{
+            void onStart(String msg);
+            void onProgess(String msg);
+            void onDone(String msg);
+        }
+
+        MoviesAdapter ma;
+        ProgressListener progressListener;
+
+        public AsyncDbSort(MoviesAdapter ma, ProgressListener progressListener ){
+            this.ma = ma;
+            this.progressListener = progressListener;
+        }
+
+        @Override
+        protected String doInBackground(Movie.ComparatorBy.CompareBy... params) {
+            try {
+                Thread.sleep(3000);
+            }
+            catch (InterruptedException e) {
+
+            }
+            ma.doOrder(params[0]);
+            publishProgress ("Sorted, notifying...");
+            try {
+                Thread.sleep(5000);
+            }
+            catch (InterruptedException e) {
+
+            }
+            return "Done.";
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressListener.onStart("Starting sort...");
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            progressListener.onProgess(values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            progressListener.onDone(s);
+        }
+
     }
 
     public class ToastOnClickListener implements View.OnClickListener {
@@ -37,7 +137,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             Log.d(TAG, "onClick: view Class=" + view.getClass().getName());
             if (view instanceof RelativeLayout) {
                 int itemPosition = mRecyclerView.getChildLayoutPosition(view);
-                item = "**"+moviesList.get(itemPosition).getTitle();
+                item = "**"+itemsList.get(itemPosition).getTitle();
             } else if (view instanceof TextView) {
                 item = ((TextView)view).getText().toString();
             }
@@ -49,7 +149,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemViewType(int position) {
-        if (moviesList.get(position) instanceof Movie)
+        if (itemsList.get(position) instanceof Movie)
             return MOVIEROW;
         return HEADERROW;
     }
@@ -73,7 +173,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Titled item = moviesList.get(position);
+        Titled item = itemsList.get(position);
         if ((item instanceof Movie) && (holder instanceof MovieViewHolder)) {
             MovieViewHolder vh = (MovieViewHolder)holder;
             Movie m =  (Movie) item;
@@ -84,6 +184,6 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemCount() {
-        return moviesList.size();
+        return itemsList.size();
     }
 }
