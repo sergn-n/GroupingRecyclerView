@@ -16,16 +16,16 @@ import java.util.List;
 import ru.ncom.recyclerview.R;
 import ru.ncom.recyclerview.model.Movie;
 import ru.ncom.recyclerview.model.MovieDb;
-import ru.ncom.recyclerview.model.Titled;
+
+//TODO Screen rotation: remember collapsing
 
 public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public final int MOVIEROW = 1;
     public final int HEADERROW = 2;
-    // Represantation
+    private MovieDb mDb = null;
 
     private final List<Titled> itemsList = new ArrayList<>();
-    private MovieDb mDb = null;
     private RecyclerView mRecyclerView;
 
     public MoviesAdapter(MovieDb db, RecyclerView rv) {
@@ -39,17 +39,59 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        if (itemsList.get(position) instanceof Movie)
+            return MOVIEROW;
+        return HEADERROW;
+    }
+
+    @Override
+    public int getItemCount() {
+        return itemsList.size();
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View itemView;
+        switch (viewType) {
+            case MOVIEROW:
+                itemView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.movie_row, parent, false);
+                //itemView.setOnClickListener(mToastClickListener);
+                return new MovieViewHolder(itemView, mToastClickListener);
+            default:
+                itemView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.header_row, parent, false);
+                itemView.setOnClickListener(mCollapseExpandCL);
+                return new HeaderViewHolder(itemView);
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        Titled item = itemsList.get(position);
+        if ((item instanceof Movie) && (holder instanceof MovieViewHolder)) {
+            MovieViewHolder vh = (MovieViewHolder)holder;
+            Movie m =  (Movie) item;
+            vh.genre.setText(m.getGenre());
+            vh.year.setText(m.getYear());
+        }
+        ((TitledViewHolder) holder).getTitleView().setText(item.getTitle());    }
     public Titled getAt(int position) {
         return itemsList.get(position);
     }
 
-    public void orderBy(Movie.ComparatorBy.CompareBy sortField) {
+
+    // ** Ordering **
+
+    public void orderBy(String sortField) {
         doOrder(sortField);
         notifyDataSetChanged();
     }
 
-    private void doOrder(Movie.ComparatorBy.CompareBy sortField) {
-        Movie.ComparatorBy mcb = new Movie.ComparatorBy(sortField);
+    protected void doOrder(String sortField) {
+        ComparatorGrouper<Movie> mcb = Movie.getComparatorGrouper(sortField);
         List<Movie> ml = mDb.orderBy(mcb);
         List<Movie> subml = null;
         String oldTitle = null;
@@ -59,7 +101,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             String newTitle = mcb.getGroup(m);
             if (!newTitle.equals(oldTitle)) {
                 Header h = new Header(newTitle);
-                subml = h.getMovieList();
+                subml = h.getChildItemList();
                 itemsList.add(h);
                 oldTitle = newTitle;
             }
@@ -68,13 +110,13 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
-    public void orderByAsync (Movie.ComparatorBy.CompareBy sortField, AsyncDbSort.ProgressListener progressView) {
+    // more Ordering, async
+    public void orderByAsync (String sortField, AsyncDbSort.ProgressListener progressView) {
         (new AsyncDbSort(this, progressView)).execute(sortField);
 
     }
 
-
-    public static class AsyncDbSort extends AsyncTask<Movie.ComparatorBy.CompareBy,String,String> {
+    public static class AsyncDbSort extends AsyncTask<String,String,String> {
 
         public interface ProgressListener{
             void onStart(String msg);
@@ -91,7 +133,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         @Override
-        protected String doInBackground(Movie.ComparatorBy.CompareBy... params) {
+        protected String doInBackground(String... params) {
             try {
                 Thread.sleep(3000);
             }
@@ -129,8 +171,54 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     }
 
+    // **Click listeners**
+    
+    //  Collapse / expand group by clicking on header view
+    private final View.OnClickListener mCollapseExpandCL = new CollapseExpandClickListener();
+
+    public class CollapseExpandClickListener implements View.OnClickListener {
+        private final String TAG = "CollapsExpandCL(Adpt)";
+
+        @Override
+        public void onClick(final View view) {
+            Log.d(TAG, "onClick: view Class=" + view.getClass().getName());
+            int headerPosition = mRecyclerView.getChildLayoutPosition(view);
+            Titled itm =itemsList.get(headerPosition);
+            if (itm instanceof Header) {
+                Header h = (Header)itm;
+                if (h.isCollapsed() ) {
+                    // expand
+                    List<?> childItemList = h.getChildItemList();
+                    if (childItemList != null) {
+                        int childListItemCount = childItemList.size();
+                        for (int i = 0; i < childListItemCount; i++) {
+                            itemsList.add(headerPosition + i + 1, (Titled)childItemList.get(i));
+                        }
+                        h.setCollapsed(false);
+                        notifyItemRangeInserted(headerPosition + 1, childListItemCount);
+                    }
+                }
+                else{
+                    // collapse
+                    List<?> childItemList = h.getChildItemList();
+                    if (childItemList != null) {
+                        int childListItemCount = childItemList.size();
+                        for (int i = childListItemCount - 1; i >= 0; i--) {
+                            itemsList.remove(headerPosition + i + 1);
+                        }
+                        h.setCollapsed(true);
+                        notifyItemRangeRemoved(headerPosition + 1, childListItemCount);
+                    }
+                }
+            }
+        }
+    }
+
+    // Demo Listener, is applied to childs of RV row
+    private final View.OnClickListener mToastClickListener = new ToastOnClickListener();
+
     public class ToastOnClickListener implements View.OnClickListener {
-        private final String TAG = "ToastOnClickLstnr(Adpt)";
+        private final String TAG = "ToastCL(Adpt)";
         @Override
         public void onClick(final View view) {
             String item = null;
@@ -143,47 +231,5 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             }
             Toast.makeText(mRecyclerView.getContext(), item, Toast.LENGTH_LONG).show();
         }
-    }
-
-    private final View.OnClickListener mOnClickListener = new ToastOnClickListener();
-
-    @Override
-    public int getItemViewType(int position) {
-        if (itemsList.get(position) instanceof Movie)
-            return MOVIEROW;
-        return HEADERROW;
-    }
-
-
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = null;
-        switch (viewType) {
-            case MOVIEROW:
-                itemView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.movie_row, parent, false);
-                //itemView.setOnClickListener(mOnClickListener);
-                return new MovieViewHolder(itemView, mOnClickListener);
-            default:
-                itemView = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.header_row, parent, false);
-                return new HeaderViewHolder(itemView);
-        }
-    }
-
-    @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Titled item = itemsList.get(position);
-        if ((item instanceof Movie) && (holder instanceof MovieViewHolder)) {
-            MovieViewHolder vh = (MovieViewHolder)holder;
-            Movie m =  (Movie) item;
-            vh.genre.setText(m.getGenre());
-            vh.year.setText(m.getYear());
-        }
-        ((TitledViewHolder) holder).getTitleView().setText(item.getTitle());    }
-
-    @Override
-    public int getItemCount() {
-        return itemsList.size();
     }
 }

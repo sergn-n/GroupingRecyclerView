@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview.model;
+package ru.ncom.recyclerview.adapter;
 
 public interface Titled {
         String getTitle() ;

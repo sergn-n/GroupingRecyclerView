@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.ncom.recyclerview.model.Movie;
-import ru.ncom.recyclerview.model.Titled;
 
 /**
  * Created by gerg on 08.09.2016.
@@ -14,9 +13,6 @@ public class Header implements Titled {
     private String title = null;
     private boolean isCollapsed = false;
     private final List<Movie> movieList = new ArrayList<>();
-
-    public Header() {
-    }
 
     public Header(String title) {
         this.title = title;
@@ -37,10 +33,10 @@ public class Header implements Titled {
     }
 
     public void setCollapsed(boolean isCollapsed){
-        isCollapsed = true;
+        this.isCollapsed = isCollapsed;
     }
 
-    public List<Movie> getMovieList() {
+    public List<Movie> getChildItemList() {
         return movieList;
     }
 }

@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -69,7 +70,7 @@ public class MovieDb
 
     public List<Movie> getMovieList() { return movieList;}
 
-    public List<Movie> orderBy(Movie.ComparatorBy mcb) {
+    public List<Movie> orderBy(Comparator<Movie> mcb) {
         Collections.sort(movieList,mcb);
         return movieList;
     }

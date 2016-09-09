@@ -1,14 +1,36 @@
 package ru.ncom.recyclerview.model;
 
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import ru.ncom.recyclerview.adapter.ComparatorGrouper;
+import ru.ncom.recyclerview.adapter.Titled;
 
 /**
  * Created by Lincoln on 15/01/16.
  */
 public class Movie implements Titled {
+
     private String title, genre, year;
 
-    public Movie() {
+    /**
+     * Fields ComparatorGrouper&lt;Movie> can accept
+     */
+    private static final String FIELD_TITLE = "TITLE";
+    private static final String FIELD_GENRE = "GENRE";
+    private static final String FIELD_YEAR = "YEAR";
+
+    private static final List<String> orderByFields = Arrays.asList(new String[] {FIELD_TITLE, FIELD_GENRE, FIELD_YEAR});
+
+    // Must have
+    public static List<String> getOrderByFields() {
+        return orderByFields;
+    }
+
+    // Must have
+    public static ComparatorGrouper<Movie> getComparatorGrouper(String cby){
+        return new MovieComparatorGrouper(cby);
     }
 
     public Movie(String title, String genre, String year) {
@@ -17,10 +39,12 @@ public class Movie implements Titled {
         this.year = year;
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
 
+    @Override
     public void setTitle(String name) {
         this.title = name;
     }
@@ -41,53 +65,44 @@ public class Movie implements Titled {
         this.genre = genre;
     }
 
+    private static class MovieComparatorGrouper implements ComparatorGrouper<Movie> {
 
-    public static class ComparatorBy implements Comparator<Movie>{
-
-        /**
-         * Field ComparatorBy can accept
-         */
-        public enum CompareBy {
-            TITLE, GENRE, YEAR
-        }
-
-        CompareBy mCby;
+        String mCby;
 
         /**
-         * Create a Comparator for the field.
-         * Additionaly ComparatorBy#getGroup returns grouping header
+         * Create a ComparatorGrouper for the Movie field.
          * @param cby
          */
-        public ComparatorBy(CompareBy cby){
+        public MovieComparatorGrouper(String cby){
             this.mCby = cby;
         }
 
         @Override
         public int compare(Movie lhs, Movie rhs) {
             switch (mCby) {
-                case TITLE:
+                case FIELD_TITLE:
                     return lhs.getTitle().compareTo(rhs.getTitle());
-                case GENRE:
+                case FIELD_GENRE:
                     return lhs.getGenre().compareTo(rhs.getGenre());
-                case YEAR:
+                case FIELD_YEAR:
                     return lhs.getYear().compareTo(rhs.getYear());
                 default:
                     return 0;
             }
         }
 
+        @Override
         public String getGroup (Movie m){
             switch (mCby) {
-                case TITLE:
+                case FIELD_TITLE:
                     return m.getTitle().substring(0,1);
-                case GENRE:
+                case FIELD_GENRE:
                     return m.getGenre().substring(0,1);
-                case YEAR:
+                case FIELD_YEAR:
                     return m.getYear().substring(0,3)+"0s";
                 default:
                     return "";
             }
         }
-
     }
 }

@@ -21,7 +21,7 @@ import ru.ncom.recyclerview.adapter.MoviesAdapter;
 import ru.ncom.recyclerview.adapter.TitledViewHolder;
 import ru.ncom.recyclerview.model.Movie;
 import ru.ncom.recyclerview.model.MovieDb;
-import ru.ncom.recyclerview.model.Titled;
+import ru.ncom.recyclerview.adapter.Titled;
 
 public class MainActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
@@ -40,12 +40,12 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         // Set sort mode spinner
-        final CharSequence[] sortModes = new CharSequence[]{
-                "" //no order when app starts
-                , Movie.ComparatorBy.CompareBy.TITLE.name()
-                , Movie.ComparatorBy.CompareBy.GENRE.name()
-                , Movie.ComparatorBy.CompareBy.YEAR.name()
-        };
+        final CharSequence[] sortModes = new CharSequence[Movie.getOrderByFields().size()+1];
+        sortModes[0] = "";
+        for (int i=0; i< Movie.getOrderByFields().size(); i++){
+            sortModes[i+1] = Movie.getOrderByFields().get(i);
+        }
+
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> spinnerAdapter =
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "spinner onItemSelected: pos=" + position);
                 if (position > 0) {
-                    Movie.ComparatorBy.CompareBy sortField = Movie.ComparatorBy.CompareBy.valueOf((String) parent.getItemAtPosition(position));
+                    String sortField = (String)parent.getItemAtPosition(position);
                     if (position > 1) {
                         // Use sync sort for GENRE and YEAR
                         mProgressView.setText(" Sync sort method.");
