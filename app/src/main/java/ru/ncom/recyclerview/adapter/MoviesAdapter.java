@@ -1,7 +1,9 @@
 package ru.ncom.recyclerview.adapter;
 
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,20 +23,24 @@ import ru.ncom.recyclerview.model.MovieDb;
 
 public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public final int MOVIEROW = 1;
+    public final int DATAROW = 1;
     public final int HEADERROW = 2;
-    private MovieDb mDb = null;
+    private final String TAG = "MoviesAdapter";
+    private final String COLLAPSEDHEADERS = "COLLAPSEDHEADERS";
 
     private final List<Titled> itemsList = new ArrayList<>();
     private RecyclerView mRecyclerView;
+    ArrayList<String> mCollapsedHeaders = null;
+
+    private MovieDb mDb = null;
 
     public MoviesAdapter(MovieDb db, RecyclerView rv) {
-
+        Log.d(TAG, "Constructor: #" + this.hashCode());
         this.mRecyclerView = rv;
         this.mDb = db;
         List<Movie> ml = mDb.getMovieList();
         // initially it's just source data
-        for (int i = 0; i <ml.size(); i++){
+        for (int i = 0; i < ml.size(); i++){
             itemsList.add(ml.get(i));
         }
     }
@@ -42,7 +48,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public int getItemViewType(int position) {
         if (itemsList.get(position) instanceof Movie)
-            return MOVIEROW;
+            return DATAROW;
         return HEADERROW;
     }
 
@@ -55,7 +61,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView;
         switch (viewType) {
-            case MOVIEROW:
+            case DATAROW:
                 itemView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.movie_row, parent, false);
                 //itemView.setOnClickListener(mToastClickListener);
@@ -82,10 +88,10 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return itemsList.get(position);
     }
 
-
     // ** Ordering **
 
     public void orderBy(String sortField) {
+        Log.d(TAG, "orderBy: " + sortField);
         doOrder(sortField);
         notifyDataSetChanged();
     }
@@ -95,19 +101,44 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<Movie> ml = mDb.orderBy(mcb);
         List<Movie> subml = null;
         String oldTitle = null;
+        Header h = null;
         itemsList.clear();
         for (int i = 0; i < ml.size(); i++) {
             Movie m = ml.get(i);
             String newTitle = mcb.getGroup(m);
             if (!newTitle.equals(oldTitle)) {
-                Header h = new Header(newTitle);
+                h = new Header(newTitle);
                 subml = h.getChildItemList();
                 itemsList.add(h);
+                if (mCollapsedHeaders != null && mCollapsedHeaders.indexOf(newTitle) >= 0){
+                    //sort fired by instance restoring after screen rotation
+                    h.setCollapsed(true);
+                }
                 oldTitle = newTitle;
             }
-            itemsList.add(m);
+            if (!h.isCollapsed())
+                itemsList.add(m);
             subml.add(m);
         }
+        //TODO spinner's onItemSelected is called twice on screen rotation.
+        //  clear restored till next rotate
+        mCollapsedHeaders = null;
+    }
+
+    public void onSaveInstanceState(Bundle outState){
+        Log.d(TAG, "onSaveInstanceState: ");
+        ArrayList<String> collapsedHeaders = new ArrayList<>();
+        for (int i=0; i<itemsList.size(); i++){
+            Titled itm = itemsList.get(i);
+            if ((itm instanceof Header) &&  ((Header)itm).isCollapsed())
+                collapsedHeaders.add(((Header)itm).getTitle());
+        }
+        outState.putStringArrayList(COLLAPSEDHEADERS,collapsedHeaders);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState){
+        Log.d(TAG, "onRestoreInstanceState: ");
+        mCollapsedHeaders = savedInstanceState.getStringArrayList(COLLAPSEDHEADERS);
     }
 
     // more Ordering, async
@@ -185,6 +216,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             int headerPosition = mRecyclerView.getChildLayoutPosition(view);
             Titled itm =itemsList.get(headerPosition);
             if (itm instanceof Header) {
+                //  clear restored state
+                mCollapsedHeaders = null;
+
                 Header h = (Header)itm;
                 if (h.isCollapsed() ) {
                     // expand

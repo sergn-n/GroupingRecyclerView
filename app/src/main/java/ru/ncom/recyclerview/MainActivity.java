@@ -53,13 +53,19 @@ public class MainActivity extends AppCompatActivity
         // Specify the layout to use when the list of choices appears
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerAdapter);
-        // Spinner listener
+        // Spinner listener. When setting listener, framework calls its onItemSelected ()
+        // ignore this dummy call
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            private final String TAG = "OnItemSelectedListener";
+            private final static String TAG = "OnItemSelectedListener";
+            boolean firstOnItemSelected = true;
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "spinner onItemSelected: pos=" + position);
+                Log.d(TAG, "spinner onItemSelected: pos=" + position +" first call="+firstOnItemSelected);
+                if(firstOnItemSelected) {
+                    firstOnItemSelected = false;
+                    return;
+                }
                 if (position > 0) {
                     String sortField = (String)parent.getItemAtPosition(position);
                     if (position > 1) {
@@ -117,6 +123,18 @@ public class MainActivity extends AppCompatActivity
 
             }
         }));
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mAdapter.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mAdapter.onRestoreInstanceState(savedInstanceState);
     }
 
     // ProgressListener members
