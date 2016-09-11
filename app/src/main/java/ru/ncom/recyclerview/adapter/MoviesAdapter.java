@@ -3,7 +3,6 @@ package ru.ncom.recyclerview.adapter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -100,31 +99,32 @@ public class MoviesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         ComparatorGrouper<Movie> mcb = Movie.getComparatorGrouper(sortField);
         List<Movie> ml = mDb.orderBy(mcb);
         List<Movie> subml = null;
-        String oldTitle = null;
         Header h = null;
         itemsList.clear();
         for (int i = 0; i < ml.size(); i++) {
             Movie m = ml.get(i);
-            String newTitle = mcb.getGroup(m);
-            if (!newTitle.equals(oldTitle)) {
+            String newTitle = mcb.getGroupTitle(m);
+            if ((h==null) || !newTitle.equals(h.getTitle())) {
                 h = new Header(newTitle);
                 subml = h.getChildItemList();
                 itemsList.add(h);
-                if (mCollapsedHeaders != null && mCollapsedHeaders.indexOf(newTitle) >= 0){
-                    //sort fired by instance restoring after screen rotation
+                if (mCollapsedHeaders != null //sort is fired by restoring after screen rotation
+                        && mCollapsedHeaders.indexOf(newTitle) >= 0){
                     h.setCollapsed(true);
                 }
-                oldTitle = newTitle;
             }
             if (!h.isCollapsed())
                 itemsList.add(m);
             subml.add(m);
         }
-        //TODO spinner's onItemSelected is called twice on screen rotation.
-        //  clear restored till next rotate
+        //  Clear restored collapsed headers till next screen rotation
         mCollapsedHeaders = null;
     }
 
+    /**
+     * Saves the list of collapsed headers.
+     * @param outState
+     */
     public void onSaveInstanceState(Bundle outState){
         Log.d(TAG, "onSaveInstanceState: ");
         ArrayList<String> collapsedHeaders = new ArrayList<>();

@@ -17,6 +17,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
+
 import ru.ncom.recyclerview.adapter.MoviesAdapter;
 import ru.ncom.recyclerview.adapter.TitledViewHolder;
 import ru.ncom.recyclerview.model.Movie;
@@ -42,8 +44,9 @@ public class MainActivity extends AppCompatActivity
         // Set sort mode spinner
         final CharSequence[] sortModes = new CharSequence[Movie.getOrderByFields().size()+1];
         sortModes[0] = "";
-        for (int i=0; i< Movie.getOrderByFields().size(); i++){
-            sortModes[i+1] = Movie.getOrderByFields().get(i);
+        List<String> movieOrderByFields = Movie.getOrderByFields();
+        for (int i=0; i< movieOrderByFields.size(); i++){
+            sortModes[i+1] = movieOrderByFields.get(i);
         }
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
@@ -53,15 +56,17 @@ public class MainActivity extends AppCompatActivity
         // Specify the layout to use when the list of choices appears
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerAdapter);
-        // Spinner listener. When setting listener, framework calls its onItemSelected ()
-        // ignore this dummy call
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             private final static String TAG = "OnItemSelectedListener";
+
             boolean firstOnItemSelected = true;
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "spinner onItemSelected: pos=" + position +" first call="+firstOnItemSelected);
+                // When setting listener, framework calls its onItemSelected() so
+                // Spinner's onItemSelected is called twice on screen rotation.
+                // Ignore first call.
                 if(firstOnItemSelected) {
                     firstOnItemSelected = false;
                     return;
