@@ -23,8 +23,6 @@ import ru.ncom.recyclerview.groupingAdapter.TitledViewHolder;
 import ru.ncom.recyclerview.model.Movie;
 import ru.ncom.recyclerview.model.MovieDb;
 
-//TODO Screen rotation: remember collapsing
-
 public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     private final String TAG = "MoviesAdapter";
@@ -59,7 +57,8 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
             vh.genre.setText(m.getGenre());
             vh.year.setText(m.getYear());
         }
-        ((TitledViewHolder) holder).getTitleView().setText(item.getTitle());    }
+        BindTitleView(holder, position);
+    }
 
     // ** Ordering **
 

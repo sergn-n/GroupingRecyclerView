@@ -8,7 +8,7 @@ import ru.ncom.recyclerview.R;
 import ru.ncom.recyclerview.groupingAdapter.TitledViewHolder;
 
 /**
- * Created by gerg on 08.09.2016.
+ * Must implement  TitledViewHolder interface
  */
 public class HeaderViewHolder extends RecyclerView.ViewHolder
         implements TitledViewHolder {

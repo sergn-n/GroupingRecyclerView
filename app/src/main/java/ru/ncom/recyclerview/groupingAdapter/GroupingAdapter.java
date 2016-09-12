@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,6 +16,7 @@ import java.util.List;
 import ru.ncom.recyclerview.R;
 import ru.ncom.recyclerview.adapter.HeaderViewHolder;
 import ru.ncom.recyclerview.adapter.MovieViewHolder;
+import ru.ncom.recyclerview.model.Movie;
 
 
 /**
@@ -60,6 +62,12 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         return itemsList.size();
     }
 
+    /**
+     * Creates ViewHolder for the Header item and sets it's expand/collapse ClickListener
+     * @param headerLayoutId id of the layout to inflate.
+     * @param parent
+     * @return
+     */
     public RecyclerView.ViewHolder createHeaderViewHolder(int headerLayoutId, ViewGroup parent) {
         View itemView = LayoutInflater.from(parent.getContext())
                     .inflate(headerLayoutId, parent, false);
@@ -67,6 +75,22 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
             return new HeaderViewHolder(itemView);
     }
 
+    /**
+     * Sets text of the title view see {@link TitledViewHolder#getTitleView()}. If current view is a header
+     * adds also a number of items under the header/
+     * @param holder
+     * @param position
+     */
+    public void BindTitleView(RecyclerView.ViewHolder holder, int position) {
+        Titled item = itemsList.get(position);
+        TextView v = ((TitledViewHolder)holder).getTitleView();
+        String txt = item.getTitle();
+        if ( !isDataClass(item) ) {
+            Header<T> h = (Header<T>)item;
+            txt +=  (" (" + h.getChildItemList().size() + ")");
+        }
+        v.setText(txt);
+    }
 
     public Titled getAt(int position) {
         return itemsList.get(position);

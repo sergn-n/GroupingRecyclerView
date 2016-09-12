@@ -68,6 +68,9 @@ public class MovieDb implements Db<Movie>
         movie = new Movie("Guardians of the Galaxy", "Science Fiction & Fantasy", "2014");
         movieList.add(movie);
 
+        // repeat 2**3 times
+        for (int i=0; i<3; i++)
+            movieList.addAll(movieList);
     }
 
     @Override
@@ -81,7 +84,7 @@ public class MovieDb implements Db<Movie>
 
     @Override
     public ComparatorGrouper<Movie> getComparatorGrouper(String orderByFieldName) {
-        return Movie.getComparatorGrouper(orderByFieldName);
+        //return Movie.getComparatorGrouper(orderByFieldName);
+        return new Movie.MovieComparatorGrouper(orderByFieldName);
     }
-
 }

@@ -28,7 +28,7 @@ public class Movie implements Titled {
         return orderByFields;
     }
 
-    // Must have
+    //
     public static ComparatorGrouper<Movie> getComparatorGrouper(String cby){
         return new MovieComparatorGrouper(cby);
     }
@@ -65,7 +65,7 @@ public class Movie implements Titled {
         this.genre = genre;
     }
 
-    private static class MovieComparatorGrouper implements ComparatorGrouper<Movie> {
+    public static class MovieComparatorGrouper implements ComparatorGrouper<Movie> {
 
         final String mCby;
 
