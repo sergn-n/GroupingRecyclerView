@@ -38,7 +38,13 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
                 //itemView.setOnClickListener(mToastClickListener);
                 return new MovieViewHolder(itemView, mToastClickListener);
             default:
-                return createHeaderViewHolder(R.layout.header_row, parent);
+                return createHeaderViewHolder(R.layout.header_row, R.id.title, parent);
+            /* Alternatively do it yourself
+                itemView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.header_row, parent, false);
+                itemView.setOnClickListener(mCollapseExpandCL);
+
+             */
         }
     }
 

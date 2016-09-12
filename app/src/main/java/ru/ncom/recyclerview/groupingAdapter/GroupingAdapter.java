@@ -12,17 +12,11 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.ncom.recyclerview.adapter.HeaderViewHolder;
-
 
 /**
  * Created by Serg on 11.09.2016.
  */
 public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    private boolean isDataClass(Titled tobj) {
-        return mClass.isInstance(tobj);
-    }
 
     public final int DATAROW = 1;
     public final int HEADERROW = 2;
@@ -46,6 +40,10 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         }
     }
 
+    private boolean isDataClass(Titled tobj) {
+        return mClass.isInstance(tobj);
+    }
+
     @Override
     public int getItemViewType(int position) {
         if (isDataClass(itemsList.get(position)))
@@ -59,21 +57,24 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
     }
 
     /**
-     * Creates ViewHolder for the Header item and sets it's expand/collapse ClickListener
-     * @param headerLayoutId id of the layout to inflate.
+     * Inflates specified header layout and sets it's expand/collapse ClickListener.
+     * Creates default ViewHolder with a view for the title TextView.
+     * Alternatively you can create your own holder which must implement {@link TitledViewHolder}
+     * @param headerLayoutId id of the header layout.
+     * @param titleTextViewId id of the title TextView in the header layout.
      * @param parent
      * @return
      */
-    public RecyclerView.ViewHolder createHeaderViewHolder(int headerLayoutId, ViewGroup parent) {
+    public RecyclerView.ViewHolder createHeaderViewHolder(int headerLayoutId, int titleTextViewId, ViewGroup parent) {
         View itemView = LayoutInflater.from(parent.getContext())
                     .inflate(headerLayoutId, parent, false);
             itemView.setOnClickListener(mCollapseExpandCL);
-            return new HeaderViewHolder(itemView);
+            return new HeaderViewHolder(itemView, titleTextViewId);
     }
 
     /**
      * Sets text of the title view see {@link TitledViewHolder#getTitleView()}. If current view is a header
-     * adds also a number of items under the header/
+     * adds also a number of items under the header.
      * @param holder
      * @param position
      */
@@ -147,7 +148,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
     // **Click listeners**
 
     //  Collapse / expand group by clicking on header view
-    private final View.OnClickListener mCollapseExpandCL = new CollapseExpandClickListener();
+    protected final View.OnClickListener mCollapseExpandCL = new CollapseExpandClickListener();
 
     public class CollapseExpandClickListener implements View.OnClickListener {
 
@@ -155,7 +156,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         public void onClick(final View view) {
 
             int headerPosition = mRecyclerView.getChildLayoutPosition(view);
-            Titled itm =itemsList.get(headerPosition);
+            Titled itm = itemsList.get(headerPosition);
             if (!isDataClass(itm)) {
                 //  clear restored state
                 mCollapsedHeaders = null;
