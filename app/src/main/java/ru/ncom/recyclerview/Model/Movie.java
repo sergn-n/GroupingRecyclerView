@@ -1,12 +1,11 @@
 package ru.ncom.recyclerview.model;
 
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ru.ncom.recyclerview.adapter.ComparatorGrouper;
-import ru.ncom.recyclerview.adapter.Titled;
+import ru.ncom.recyclerview.groupingAdapter.ComparatorGrouper;
+import ru.ncom.recyclerview.groupingAdapter.Titled;
 
 /**
  * Created by Lincoln on 15/01/16.

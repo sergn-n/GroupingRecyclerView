@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import ru.ncom.recyclerview.R;
+import ru.ncom.recyclerview.groupingAdapter.TitledViewHolder;
 
 public class MovieViewHolder extends RecyclerView.ViewHolder
         implements TitledViewHolder {

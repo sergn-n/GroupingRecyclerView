@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview.adapter;
+package ru.ncom.recyclerview.groupingAdapter;
 
 import android.widget.TextView;
 

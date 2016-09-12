@@ -1,6 +1,5 @@
 package ru.ncom.recyclerview.groupingAdapter;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.support.v7.widget.RecyclerView;
@@ -8,42 +7,20 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import ru.ncom.recyclerview.R;
-
 import ru.ncom.recyclerview.adapter.HeaderViewHolder;
 import ru.ncom.recyclerview.adapter.MovieViewHolder;
-import ru.ncom.recyclerview.adapter.Titled;
-import ru.ncom.recyclerview.adapter.TitledViewHolder;
 
 
 /**
  * Created by Ника-Ком on 11.09.2016.
  */
 public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    interface Db<T> {
-        List<T> getDataList();
-        List<T> orderBy(Comparator<T> cmp);
-        ComparatorGrouper<T> getComparatorGrouper(String orderByFieldName);
-    }
-
-    public static abstract class ComparatorGrouper<TC> implements Comparator<TC> {
-        final String mCby;
-
-        ComparatorGrouper(String cby){
-            mCby = cby;
-        }
-
-        abstract String getGroupTitle(TC item);
-    }
 
     private boolean isDataClass(Titled tobj) {
         return mClass.isInstance(tobj);
@@ -53,19 +30,19 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
     public final int HEADERROW = 2;
     private final String COLLAPSEDHEADERS = "COLLAPSEDHEADERS";
 
-    private final List<Titled> itemsList = new ArrayList<>();
-    private RecyclerView mRecyclerView;
-    ArrayList<String> mCollapsedHeaders = null;
-    private Class<T> mClass;
+    private final Class<T> mClass;
+    private final Db<T> mDb;
+    private final RecyclerView mRecyclerView;
 
-    private Db<T> mDb = null;
+    private final List<Titled> itemsList = new ArrayList<>();
+    ArrayList<String> mCollapsedHeaders = null;
 
     public GroupingAdapter(Class<T> clazz, Db<T> db, RecyclerView rv) {
         this.mClass = clazz;
         this.mRecyclerView = rv;
         this.mDb = db;
+        // initially itemsList is just source data
         List<T> ml = mDb.getDataList();
-        // initially it's just source data
         for (int i = 0; i < ml.size(); i++){
             itemsList.add(ml.get(i));
         }
@@ -82,6 +59,14 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
     public int getItemCount() {
         return itemsList.size();
     }
+
+    public RecyclerView.ViewHolder createHeaderViewHolder(int headerLayoutId, ViewGroup parent) {
+        View itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(headerLayoutId, parent, false);
+            itemView.setOnClickListener(mCollapseExpandCL);
+            return new HeaderViewHolder(itemView);
+    }
+
 
     public Titled getAt(int position) {
         return itemsList.get(position);

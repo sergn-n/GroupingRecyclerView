@@ -3,9 +3,6 @@ package ru.ncom.recyclerview.groupingAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.ncom.recyclerview.adapter.Titled;
-import ru.ncom.recyclerview.model.Movie;
-
 /**
  * Created by Ника-Ком on 12.09.2016.
  */
