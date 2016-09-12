@@ -11,22 +11,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ru.ncom.recyclerview.R;
-import ru.ncom.recyclerview.groupingAdapter.ComparatorGrouper;
 import ru.ncom.recyclerview.groupingAdapter.GroupingAdapter;
-import ru.ncom.recyclerview.groupingAdapter.Header;
 import ru.ncom.recyclerview.groupingAdapter.Titled;
-import ru.ncom.recyclerview.groupingAdapter.TitledViewHolder;
 import ru.ncom.recyclerview.model.Movie;
 import ru.ncom.recyclerview.model.MovieDb;
 
 public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     private final String TAG = "MoviesAdapter";
-    private RecyclerView mRecyclerView;
+    private final RecyclerView mRecyclerView;
 
     public MoviesAdapter(MovieDb db, RecyclerView rv) {
         super(Movie.class, db, rv);
@@ -143,7 +137,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     // **Click listeners**
     
-    //  Collapse / expand group by clicking on header view already implemented by super
+    //  Collapse / expand group by clicking on header view is already implemented in super
 
     // Demo Listener, is applied to childs of RV row
     private final View.OnClickListener mToastClickListener = new ToastOnClickListener();

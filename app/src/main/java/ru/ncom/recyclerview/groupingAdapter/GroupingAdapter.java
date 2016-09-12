@@ -10,17 +10,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
-import ru.ncom.recyclerview.R;
 import ru.ncom.recyclerview.adapter.HeaderViewHolder;
-import ru.ncom.recyclerview.adapter.MovieViewHolder;
-import ru.ncom.recyclerview.model.Movie;
 
 
 /**
- * Created by Ника-Ком on 11.09.2016.
+ * Created by Serg on 11.09.2016.
  */
 public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -114,7 +110,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
             T m = ml.get(i);
             String newTitle = mcb.getGroupTitle(m);
             if ((h==null) || !newTitle.equals(h.getTitle())) {
-                h = new Header<T>(newTitle);
+                h = new Header<>(newTitle);
                 subml = h.getChildItemList();
                 itemsList.add(h);
                 if (mCollapsedHeaders != null //sort is fired by restoring after screen rotation
@@ -139,7 +135,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         for (int i=0; i<itemsList.size(); i++){
             Titled itm = itemsList.get(i);
             if ((!isDataClass(itm)) && ((Header<T>)itm).isCollapsed())
-                collapsedHeaders.add(((Header<T>)itm).getTitle());
+                collapsedHeaders.add(itm.getTitle());
         }
         outState.putStringArrayList(COLLAPSEDHEADERS,collapsedHeaders);
     }
@@ -154,7 +150,6 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
     private final View.OnClickListener mCollapseExpandCL = new CollapseExpandClickListener();
 
     public class CollapseExpandClickListener implements View.OnClickListener {
-        private final String TAG = "CollapsExpandCL(Adpt)";
 
         @Override
         public void onClick(final View view) {

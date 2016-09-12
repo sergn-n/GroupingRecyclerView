@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Ника-Ком on 12.09.2016.
+ * Created  on 12.09.2016.
  */
 public class Header<T extends Titled> implements Titled {
 

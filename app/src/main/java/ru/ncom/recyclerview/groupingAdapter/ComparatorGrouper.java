@@ -11,5 +11,5 @@ public interface ComparatorGrouper<T>  extends Comparator<T> {
      * @param m
      * @return
      */
-    public String getGroupTitle(T m) ;
+    String getGroupTitle(T m) ;
 }

@@ -13,7 +13,7 @@ import ru.ncom.recyclerview.groupingAdapter.TitledViewHolder;
 public class HeaderViewHolder extends RecyclerView.ViewHolder
         implements TitledViewHolder {
 
-    public TextView title;
+    public final TextView title;
 
     public HeaderViewHolder(View view) {
         super(view);

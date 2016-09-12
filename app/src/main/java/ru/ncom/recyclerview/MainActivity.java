@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity
                 Titled movie = mAdapter.getAt(position);
                 String dbTitle = movie.getTitle();
                 Toast.makeText(getApplicationContext()
-                        , (viewTitle == dbTitle)
+                        , (viewTitle.equals(dbTitle))
                                 ? dbTitle + " is selected!"
                                 : "They are different! \n" + dbTitle + "\n" + viewTitle
                         , Toast.LENGTH_SHORT).show();
