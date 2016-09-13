@@ -8,8 +8,8 @@ android {
         applicationId "ru.ncom.recyclerview"
         minSdkVersion 9
         targetSdkVersion 23
-        versionCode 101008
-        versionName "1.01.008"
+        versionCode 101009
+        versionName "1.01.009"
     }
     buildTypes {
         release {

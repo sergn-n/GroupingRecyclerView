@@ -11,9 +11,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import ru.ncom.groupingrvadapter.GroupingAdapter;
+import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.recyclerview.R;
-import ru.ncom.recyclerview.groupingAdapter.GroupingAdapter;
-import ru.ncom.recyclerview.groupingAdapter.Titled;
+
 import ru.ncom.recyclerview.model.Movie;
 import ru.ncom.recyclerview.model.MovieDb;
 

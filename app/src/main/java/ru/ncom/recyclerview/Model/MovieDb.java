@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import ru.ncom.recyclerview.groupingAdapter.ComparatorGrouper;
-import ru.ncom.recyclerview.groupingAdapter.Db;
+import ru.ncom.groupingrvadapter.ComparatorGrouper;
+import ru.ncom.groupingrvadapter.Db;
 
 
 /**

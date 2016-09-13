@@ -4,8 +4,9 @@ import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.List;
 
-import ru.ncom.recyclerview.groupingAdapter.ComparatorGrouper;
-import ru.ncom.recyclerview.groupingAdapter.Titled;
+import ru.ncom.groupingrvadapter.ComparatorGrouper;
+import ru.ncom.groupingrvadapter.Titled;
+
 
 /**
  * Created by Lincoln on 15/01/16.

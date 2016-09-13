@@ -19,11 +19,13 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import ru.ncom.groupingrvadapter.Titled;
+import ru.ncom.groupingrvadapter.TitledViewHolder;
+
 import ru.ncom.recyclerview.adapter.MoviesAdapter;
-import ru.ncom.recyclerview.groupingAdapter.TitledViewHolder;
 import ru.ncom.recyclerview.model.Movie;
 import ru.ncom.recyclerview.model.MovieDb;
-import ru.ncom.recyclerview.groupingAdapter.Titled;
+
 
 public class MainActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
