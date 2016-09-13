@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +31,14 @@ import ru.ncom.recyclerview.model.MovieDb;
 public class MainActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
 
+    private final String TAG = "Main";
     private MovieDb mMovieDb = new MovieDb();
     private RecyclerView mRecyclerView;
+    private Spinner mSortSpinner;
     private MoviesAdapter mAdapter;
     private TextView mProgressView;
+    private Button mGoSort;
+
     final String ASYNCSORT = " Async sort method: ";
 
     @Override
@@ -51,21 +56,45 @@ public class MainActivity extends AppCompatActivity
             sortModes[i+1] = movieOrderByFields.get(i);
         }
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        mSortSpinner = (Spinner) findViewById(R.id.spinner);
+        mGoSort = (Button)findViewById(R.id.go_button);
+        mGoSort.setEnabled(false);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> spinnerAdapter =
                 new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortModes);
         // Specify the layout to use when the list of choices appears
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(spinnerAdapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSortSpinner.setAdapter(spinnerAdapter);
+        mSortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            private final static String TAG = "OnItemSelectedListener";
+            int currentPosition = 0;
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+               Log.d(TAG, "mSortSpinner onItemSelected: pos=" + position );
+               if (position != currentPosition) {
+                   mGoSort.setEnabled(true);
+                   currentPosition = position;
+               }
+               else
+                   mGoSort.setEnabled(false);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        /* Use go button instead
+        mSortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             private final static String TAG = "OnItemSelectedListener";
 
             boolean firstOnItemSelected = true;
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "spinner onItemSelected: pos=" + position +" first call="+firstOnItemSelected);
+                Log.d(TAG, "mSortSpinner onItemSelected: pos=" + position +" first call="+firstOnItemSelected);
                 // When setting listener, framework calls its onItemSelected() so
                 // Spinner's onItemSelected is called twice on screen rotation.
                 // Ignore first call.
@@ -91,8 +120,8 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-
-        mProgressView = (TextView) findViewById(R.id.orderProgress);
+        */
+                mProgressView = (TextView) findViewById(R.id.orderProgress);
 
         // Set movie recycler
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -130,6 +159,23 @@ public class MainActivity extends AppCompatActivity
 
             }
         }));
+    }
+
+    public void goButtonClicked(View v) {
+        int position = mSortSpinner.getSelectedItemPosition();
+        if (position > 0) {
+            String sortField = (String) mSortSpinner.getSelectedItem();
+            mGoSort.setEnabled(false);
+
+            if (position > 1) {
+                // Use sync sort for GENRE and YEAR
+                mProgressView.setText(" Sync sort method.");
+                mAdapter.orderBy(sortField);
+            } else {
+                // Use async sort for TITLE
+                mAdapter.orderByAsync(sortField, MainActivity.this);
+            }
+        }
     }
 
     @Override

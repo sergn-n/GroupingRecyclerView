@@ -99,7 +99,7 @@ public class Movie implements Titled {
                 case FIELD_TITLE:
                     return m.getTitle().substring(0,1);
                 case FIELD_GENRE:
-                    return m.getGenre().substring(0,1);
+                    return m.getGenre();
                 case FIELD_YEAR:
                     return m.getYear().substring(0,3)+"0s";
                 default:

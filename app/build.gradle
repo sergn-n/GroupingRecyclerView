@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "ru.ncom.recyclerview"
-        minSdkVersion 9
+        minSdkVersion 14 //holo colors used
         targetSdkVersion 23
-        versionCode 101009
-        versionName "1.01.009"
+        versionCode 101011
+        versionName "1.01.011"
     }
     buildTypes {
         release {

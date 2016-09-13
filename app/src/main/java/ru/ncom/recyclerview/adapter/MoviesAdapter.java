@@ -1,7 +1,6 @@
 package ru.ncom.recyclerview.adapter;
 
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +17,9 @@ import ru.ncom.recyclerview.R;
 import ru.ncom.recyclerview.model.Movie;
 import ru.ncom.recyclerview.model.MovieDb;
 
+/**
+ * Example of grouping adapter for Movie class
+ */
 public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     private final String TAG = "MoviesAdapter";
@@ -40,29 +42,29 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
                 return new MovieViewHolder(itemView, mToastClickListener);
             default:
                 return createHeaderViewHolder(R.layout.header_row, R.id.title, parent);
-            /* Alternatively do it yourself
-                itemView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.header_row, parent, false);
-                itemView.setOnClickListener(mCollapseExpandCL);
-
-             */
         }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         Titled item = getAt(position);
+        // My binding for Data
         if ((item instanceof Movie) && (holder instanceof MovieViewHolder)) {
             MovieViewHolder vh = (MovieViewHolder)holder;
-            Movie m = (Movie) item;
+            Movie m = (Movie)item;
             vh.genre.setText(m.getGenre());
             vh.year.setText(m.getYear());
         }
+        // Default binding for Header
         BindTitleView(holder, position);
     }
 
-    // ** Ordering **
+    // Optional:
 
+    // **Ordering**
+
+    // default ordering (synchronous)  - nothing to do
+    /*
     @Override
     public void orderBy(String sortField) {
         Log.d(TAG, "orderBy: " + sortField);
@@ -80,11 +82,12 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
         Log.d(TAG, "onRestoreInstanceState: ");
         super.onRestoreInstanceState(savedInstanceState);
     }
+    */
 
-    // more Ordering, async
+    // Test asynch ordering using protected doOrder()
+
     public void orderByAsync (String sortField, AsyncDbSort.ProgressListener progressView) {
         (new AsyncDbSort(this, progressView)).execute(sortField);
-
     }
 
     public static class AsyncDbSort extends AsyncTask<String,String,String> {
@@ -111,6 +114,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
             catch (InterruptedException e) {
 
             }
+            //
             ma.doOrder(params[0]);
             publishProgress ("Sorted, notifying...");
             try {
@@ -144,9 +148,10 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     // **Click listeners**
     
-    //  Collapse / expand group by clicking on header view is already implemented in super
+    //  Collapse / expand group with a click on header view is already implemented in super
 
-    // Demo Listener, is applied to childs of RV row
+    // Demo Listener, is applied to childs of Data row
+
     private final View.OnClickListener mToastClickListener = new ToastOnClickListener();
 
     public class ToastOnClickListener implements View.OnClickListener {
