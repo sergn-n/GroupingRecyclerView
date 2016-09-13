@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "ru.ncom.recyclerview"
-        minSdkVersion 14
+        minSdkVersion 9
         targetSdkVersion 23
-        versionCode 101007
-        versionName "1.01.007"
+        versionCode 101008
+        versionName "1.01.008"
     }
     buildTypes {
         release {

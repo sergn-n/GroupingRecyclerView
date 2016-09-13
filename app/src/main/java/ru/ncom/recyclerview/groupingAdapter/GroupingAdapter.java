@@ -104,7 +104,6 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
 
         ComparatorGrouper<T> mcb = mDb.getComparatorGrouper(sortField);
         List<T> ml = mDb.orderBy(mcb);
-        List<T> subml = null;
         Header<T> h = null;
         itemsList.clear();
         for (int i = 0; i < ml.size(); i++) {
@@ -112,7 +111,6 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
             String newTitle = mcb.getGroupTitle(m);
             if ((h==null) || !newTitle.equals(h.getTitle())) {
                 h = new Header<>(newTitle);
-                subml = h.getChildItemList();
                 itemsList.add(h);
                 if (mCollapsedHeaders != null //sort is fired by restoring after screen rotation
                         && mCollapsedHeaders.indexOf(newTitle) >= 0){
@@ -121,7 +119,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
             }
             if (!h.isCollapsed())
                 itemsList.add(m);
-            subml.add(m);
+            h.getChildItemList().add(m);
         }
         //  Clear restored collapsed headers till next screen rotation
         mCollapsedHeaders = null;
@@ -147,7 +145,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
 
     // **Click listeners**
 
-    //  Collapse / expand group by clicking on header view
+    //  Collapse / expand group by clicking on header.
     protected final View.OnClickListener mCollapseExpandCL = new CollapseExpandClickListener();
 
     public class CollapseExpandClickListener implements View.OnClickListener {
