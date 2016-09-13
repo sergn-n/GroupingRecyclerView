@@ -16,16 +16,25 @@ import java.util.List;
  */
 public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    /**
+     * Row type: row of data of T type
+     */
     public final int DATAROW = 1;
+    /**
+     * Row type: header of the group of rows of data of T type
+     */
     public final int HEADERROW = 2;
+
     private final String COLLAPSEDHEADERS = "COLLAPSEDHEADERS";
+    private final String SORTFIELDNAME = "SORTFIELDNAME";
 
     private final Class<T> mClass;
     private final Db<T> mDb;
     private final RecyclerView mRecyclerView;
 
     private final List<Titled> itemsList = new ArrayList<>();
-    ArrayList<String> mCollapsedHeaders = null;
+    private ArrayList<String> mCollapsedHeaders = null;
+    private String mSortFieldName = null;
 
     public GroupingAdapter(Class<T> clazz, Db<T> db, RecyclerView rv) {
         this.mClass = clazz;
@@ -56,7 +65,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
 
     /**
      * Inflates specified header layout and sets it's expand/collapse ClickListener.
-     * Creates default ViewHolder with a view for the title TextView.
+     * Creates default ViewHolder to hold a TextView for the title.
      * Alternatively you can create your own holder which must implement {@link TitledViewHolder}
      * @param headerLayoutId id of the header layout.
      * @param titleTextViewId id of the title TextView in the header layout.
@@ -71,7 +80,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
     }
 
     /**
-     * Sets text of the title view see {@link TitledViewHolder#getTitleView()}. If current view is a header
+     * Sets text value of the title TextView, see {@link TitledViewHolder#getTitleView()}. If current view is a header
      * adds also a number of items under the header.
      * @param holder
      * @param position
@@ -82,7 +91,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         String txt = item.getTitle();
         if ( !isDataClass(item) ) {
             Header<T> h = (Header<T>)item;
-            txt +=  (" (" + h.getChildItemList().size() + ")");
+            txt += (" (" + h.getChildItemList().size() + ")");
         }
         v.setText(txt);
     }
@@ -91,6 +100,9 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         return itemsList.get(position);
     }
 
+    public String getSortField() {
+        return mSortFieldName;
+    }
     // ** Ordering **
 
     public void orderBy(String sortField) {
@@ -98,8 +110,13 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         notifyDataSetChanged();
     }
 
+    /**
+     * Sorts data by the specified field and creates headers. Uses {@link ComparatorGrouper}
+     * provided by {@link Db}
+     * @param sortField
+     */
     protected void doOrder(String sortField) {
-
+        mSortFieldName = sortField;
         ComparatorGrouper<T> mcb = mDb.getComparatorGrouper(sortField);
         List<T> ml = mDb.orderBy(mcb);
         Header<T> h = null;
@@ -128,6 +145,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
      * @param outState
      */
     public void onSaveInstanceState(Bundle outState){
+        outState.putString(SORTFIELDNAME,mSortFieldName);
         ArrayList<String> collapsedHeaders = new ArrayList<>();
         for (int i=0; i<itemsList.size(); i++){
             Titled itm = itemsList.get(i);
@@ -139,6 +157,9 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
 
     public void onRestoreInstanceState(Bundle savedInstanceState){
         mCollapsedHeaders = savedInstanceState.getStringArrayList(COLLAPSEDHEADERS);
+        mSortFieldName = savedInstanceState.getString(SORTFIELDNAME);
+        if (mSortFieldName != null)
+            doOrder(mSortFieldName);
     }
 
     // **Click listeners**
