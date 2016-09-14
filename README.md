@@ -1,11 +1,8 @@
-# RecyclerView
-Test Recylcer features:  
+# Grouping RecyclerView
+Features:  
   
-  OnClick listeners for the child view and it's child views;  
+  Sorting and grouping items with a custom `ComparatorGrouper` which extends `Comparator`. Group headers are created according to the selected sort field .
   
-  Data update in main thread;  
+  Asynchronous (AsyncTask) data update demo.
   
-  Asynchronous (AsyncTask) data update.
-  
-  Sorting and grouping. Group headers are created according to the selected sort field with extended Comparator.
   
