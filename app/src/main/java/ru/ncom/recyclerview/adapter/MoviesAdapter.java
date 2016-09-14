@@ -63,7 +63,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     // **Ordering**
 
-    // default ordering (synchronous)  - nothing to do
+    // * Default ordering (synchronous)  - nothing to do
     /*
     @Override
     public void orderBy(String sortField) {
@@ -84,7 +84,9 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
     }
     */
 
-    // Test asynch ordering using protected doOrder()
+    // * Test asynch ordering using protected doOrder()
+    // NOTE it has no effect when screen is rotated before onPostExecute!
+    // AsyncTask will communicate with "old" MainActivity instance!
 
     public void orderByAsync (String sortField, AsyncDbSort.ProgressListener progressView) {
         (new AsyncDbSort(this, progressView)).execute(sortField);

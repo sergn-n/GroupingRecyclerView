@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity
     private MoviesAdapter mAdapter;
     private TextView mProgressView;
     private Button mGoSort;
+    private AdapterView.OnItemSelectedListener mSpinnerOnItemSelectedListener;
 
     final String ASYNCSORT = " Async sort method: ";
 
@@ -58,33 +59,32 @@ public class MainActivity extends AppCompatActivity
 
         mSortSpinner = (Spinner) findViewById(R.id.spinner);
         mGoSort = (Button)findViewById(R.id.go_button);
-        mGoSort.setEnabled(false);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> spinnerAdapter =
                 new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortModes);
         // Specify the layout to use when the list of choices appears
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSortSpinner.setAdapter(spinnerAdapter);
-        mSortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
             private final static String TAG = "OnItemSelectedListener";
-            int currentPosition = 0;
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-               Log.d(TAG, "mSortSpinner onItemSelected: pos=" + position );
-               if (position != currentPosition) {
-                   mGoSort.setEnabled(true);
-                   currentPosition = position;
-               }
-               else
-                   mGoSort.setEnabled(false);
+                Log.d(TAG, "mSortSpinner onItemSelected: pos=" + position );
+                Log.d(TAG, "mSortSpinner onItemSelected: adapterSort=" + mAdapter.getSortField() );
+                String sortField = (String)parent.getItemAtPosition(position);
+                mGoSort.setEnabled( (position != 0) && !sortField.equals(mAdapter.getSortField()));
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
             }
-        });
+        };
+        if (savedInstanceState == null) {
+            mGoSort.setEnabled(false);
+            mSortSpinner.setOnItemSelectedListener( mSpinnerOnItemSelectedListener);
+        }
 
         /* Use go button instead
         mSortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
         */
-                mProgressView = (TextView) findViewById(R.id.orderProgress);
+        mProgressView = (TextView) findViewById(R.id.orderProgress);
 
         // Set movie recycler
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -188,6 +188,8 @@ public class MainActivity extends AppCompatActivity
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         mAdapter.onRestoreInstanceState(savedInstanceState);
+        // Must restore mAdapter state first
+        mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
     }
 
     // ProgressListener members
