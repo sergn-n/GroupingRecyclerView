@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity
         };
         if (savedInstanceState == null) {
             mGoSort.setEnabled(false);
-            mSortSpinner.setOnItemSelectedListener( mSpinnerOnItemSelectedListener);
+            mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
         }
 
         /* Use go button instead
@@ -269,22 +269,4 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "onRequestDisallowInterceptTouchEvent: ");
         }
     }
-
 }
-/*
-***Click not on year
-09-04 18:11:07.809 25032-25032/ru.ncom.recyclerview D/RecyclerTouchListener: onInterceptTouchEvent: child Class=android.widget.RelativeLayout
-                                                                                       	, gestureDetector.onTouchEvent(e)=false
-09-04 18:11:07.909 25032-25032/ru.ncom.recyclerview D/GestureDetector: onSingleTapUp:
-09-04 18:11:07.919 25032-25032/ru.ncom.recyclerview D/RecyclerTouchListener: onInterceptTouchEvent: child Class=android.widget.RelativeLayout
-                                                                                       	, gestureDetector.onTouchEvent(e)=true
-09-04 18:11:07.919 25032-25032/ru.ncom.recyclerview D/ClickListener(Main): onClick:
-** click on year
-09-04 18:12:43.329 25032-25032/ru.ncom.recyclerview D/RecyclerTouchListener: onInterceptTouchEvent: child Class=android.widget.RelativeLayout
-                                                                                       	, gestureDetector.onTouchEvent(e)=false
-09-04 18:12:43.469 25032-25032/ru.ncom.recyclerview D/GestureDetector: onSingleTapUp:
-09-04 18:12:43.469 25032-25032/ru.ncom.recyclerview D/RecyclerTouchListener: onInterceptTouchEvent: child Class=android.widget.RelativeLayout
-                                                                                       	, gestureDetector.onTouchEvent(e)=true
-09-04 18:12:43.479 25032-25032/ru.ncom.recyclerview D/ClickListener(Main): onClick:
-09-04 18:12:43.719 25032-25032/ru.ncom.recyclerview D/ToastOnClickListener(Adpt): onClick: view Class=android.support.v7.widget.AppCompatTextView
-*/

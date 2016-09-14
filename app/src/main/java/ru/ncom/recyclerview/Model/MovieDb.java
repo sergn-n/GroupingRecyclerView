@@ -84,7 +84,6 @@ public class MovieDb implements Db<Movie>
 
     @Override
     public ComparatorGrouper<Movie> getComparatorGrouper(String orderByFieldName) {
-        //return Movie.getComparatorGrouper(orderByFieldName);
-        return new Movie.MovieComparatorGrouper(orderByFieldName);
+        return Movie.getComparatorGrouper(orderByFieldName);
     }
 }
