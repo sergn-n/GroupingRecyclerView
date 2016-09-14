@@ -85,9 +85,15 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
     */
 
     // * Test asynch ordering using protected doOrder()
-    // NOTE it has no effect when screen is rotated before onPostExecute!
-    // AsyncTask will communicate with "old" MainActivity instance!
+    //
+    //
 
+    /**
+     * NOTE it has no effect when screen is rotated before onPostExecute!
+     * AsyncTask will communicate with "old" MainActivity instance!
+     * @param sortField
+     * @param progressView
+     */
     public void orderByAsync (String sortField, AsyncDbSort.ProgressListener progressView) {
         (new AsyncDbSort(this, progressView)).execute(sortField);
     }
@@ -114,7 +120,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
                 Thread.sleep(3000);
             }
             catch (InterruptedException e) {
-
+                //intentionally empty
             }
             //
             ma.doOrder(params[0]);
@@ -123,7 +129,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
                 Thread.sleep(5000);
             }
             catch (InterruptedException e) {
-
+                //intentionally empty
             }
             return "Done.";
         }
