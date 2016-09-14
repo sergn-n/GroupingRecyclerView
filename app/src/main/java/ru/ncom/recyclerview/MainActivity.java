@@ -13,25 +13,33 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
 
+import ru.ncom.groupingrvadapter.Titled;
+import ru.ncom.groupingrvadapter.TitledViewHolder;
+
 import ru.ncom.recyclerview.adapter.MoviesAdapter;
-import ru.ncom.recyclerview.adapter.TitledViewHolder;
 import ru.ncom.recyclerview.model.Movie;
 import ru.ncom.recyclerview.model.MovieDb;
-import ru.ncom.recyclerview.adapter.Titled;
+
 
 public class MainActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
 
+    private final String TAG = "Main";
     private MovieDb mMovieDb = new MovieDb();
     private RecyclerView mRecyclerView;
+    private Spinner mSortSpinner;
     private MoviesAdapter mAdapter;
     private TextView mProgressView;
+    private Button mGoSort;
+    private AdapterView.OnItemSelectedListener mSpinnerOnItemSelectedListener;
+
     final String ASYNCSORT = " Async sort method: ";
 
     @Override
@@ -49,21 +57,44 @@ public class MainActivity extends AppCompatActivity
             sortModes[i+1] = movieOrderByFields.get(i);
         }
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        mSortSpinner = (Spinner) findViewById(R.id.spinner);
+        mGoSort = (Button)findViewById(R.id.go_button);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> spinnerAdapter =
                 new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortModes);
         // Specify the layout to use when the list of choices appears
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(spinnerAdapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSortSpinner.setAdapter(spinnerAdapter);
+        mSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+            private final static String TAG = "OnItemSelectedListener";
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "mSortSpinner onItemSelected: pos=" + position );
+                Log.d(TAG, "mSortSpinner onItemSelected: adapterSort=" + mAdapter.getSortField() );
+                String sortField = (String)parent.getItemAtPosition(position);
+                mGoSort.setEnabled( (position != 0) && !sortField.equals(mAdapter.getSortField()));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        };
+        if (savedInstanceState == null) {
+            mGoSort.setEnabled(false);
+            mSortSpinner.setOnItemSelectedListener( mSpinnerOnItemSelectedListener);
+        }
+
+        /* Use go button instead
+        mSortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             private final static String TAG = "OnItemSelectedListener";
 
             boolean firstOnItemSelected = true;
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "spinner onItemSelected: pos=" + position +" first call="+firstOnItemSelected);
+                Log.d(TAG, "mSortSpinner onItemSelected: pos=" + position +" first call="+firstOnItemSelected);
                 // When setting listener, framework calls its onItemSelected() so
                 // Spinner's onItemSelected is called twice on screen rotation.
                 // Ignore first call.
@@ -89,7 +120,7 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-
+        */
         mProgressView = (TextView) findViewById(R.id.orderProgress);
 
         // Set movie recycler
@@ -117,7 +148,7 @@ public class MainActivity extends AppCompatActivity
                 Titled movie = mAdapter.getAt(position);
                 String dbTitle = movie.getTitle();
                 Toast.makeText(getApplicationContext()
-                        , (viewTitle == dbTitle)
+                        , (viewTitle.equals(dbTitle))
                                 ? dbTitle + " is selected!"
                                 : "They are different! \n" + dbTitle + "\n" + viewTitle
                         , Toast.LENGTH_SHORT).show();
@@ -130,6 +161,23 @@ public class MainActivity extends AppCompatActivity
         }));
     }
 
+    public void goButtonClicked(View v) {
+        int position = mSortSpinner.getSelectedItemPosition();
+        if (position > 0) {
+            String sortField = (String) mSortSpinner.getSelectedItem();
+            mGoSort.setEnabled(false);
+
+            if (position > 1) {
+                // Use sync sort for GENRE and YEAR
+                mProgressView.setText(" Sync sort method.");
+                mAdapter.orderBy(sortField);
+            } else {
+                // Use async sort for TITLE
+                mAdapter.orderByAsync(sortField, MainActivity.this);
+            }
+        }
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -140,6 +188,8 @@ public class MainActivity extends AppCompatActivity
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         mAdapter.onRestoreInstanceState(savedInstanceState);
+        // Must restore mAdapter state first
+        mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
     }
 
     // ProgressListener members

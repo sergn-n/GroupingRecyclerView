@@ -30,12 +30,23 @@
             android:layout_marginRight="3dp"/>
 
         <Spinner
-            android:layout_width="wrap_content"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
             android:id="@+id/spinner"
             android:background="@android:color/darker_gray"
             android:popupBackground="@android:color/holo_blue_light"
             android:layout_marginRight="3dp" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Go"
+            android:id="@+id/go_button"
+            android:clickable="true"
+            android:enabled="true"
+            android:onClick="goButtonClicked"
+            android:layout_marginTop="3dp"/>
 
         <TextView
             android:layout_width="wrap_content"

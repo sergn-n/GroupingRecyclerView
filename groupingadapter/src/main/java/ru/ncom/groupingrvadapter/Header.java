@@ -1,18 +1,16 @@
-package ru.ncom.recyclerview.adapter;
+package ru.ncom.groupingrvadapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.ncom.recyclerview.model.Movie;
-
 /**
- * Created by gerg on 08.09.2016.
+ * Created  on 12.09.2016.
  */
-public class Header implements Titled {
+public class Header<T extends Titled> implements Titled {
 
     private String title = null;
     private boolean isCollapsed = false;
-    private final List<Movie> movieList = new ArrayList<>();
+    private final List<T> childList = new ArrayList<>();
 
     public Header(String title) {
         this.title = title;
@@ -36,7 +34,7 @@ public class Header implements Titled {
         this.isCollapsed = isCollapsed;
     }
 
-    public List<Movie> getChildItemList() {
-        return movieList;
+    public List<T> getChildItemList() {
+        return childList;
     }
 }

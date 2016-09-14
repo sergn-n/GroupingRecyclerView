@@ -1,12 +1,12 @@
 package ru.ncom.recyclerview.model;
 
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ru.ncom.recyclerview.adapter.ComparatorGrouper;
-import ru.ncom.recyclerview.adapter.Titled;
+import ru.ncom.groupingrvadapter.ComparatorGrouper;
+import ru.ncom.groupingrvadapter.Titled;
+
 
 /**
  * Created by Lincoln on 15/01/16.
@@ -29,7 +29,7 @@ public class Movie implements Titled {
         return orderByFields;
     }
 
-    // Must have
+    //
     public static ComparatorGrouper<Movie> getComparatorGrouper(String cby){
         return new MovieComparatorGrouper(cby);
     }
@@ -66,7 +66,7 @@ public class Movie implements Titled {
         this.genre = genre;
     }
 
-    private static class MovieComparatorGrouper implements ComparatorGrouper<Movie> {
+    public static class MovieComparatorGrouper implements ComparatorGrouper<Movie> {
 
         final String mCby;
 
@@ -99,7 +99,7 @@ public class Movie implements Titled {
                 case FIELD_TITLE:
                     return m.getTitle().substring(0,1);
                 case FIELD_GENRE:
-                    return m.getGenre().substring(0,1);
+                    return m.getGenre();
                 case FIELD_YEAR:
                     return m.getYear().substring(0,3)+"0s";
                 default:

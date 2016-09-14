@@ -1,15 +1,14 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3" //24.0.2  - fails!
 
     defaultConfig {
-        applicationId "ru.ncom.recyclerview"
-        minSdkVersion 14 //holo colors used
+        minSdkVersion 9
         targetSdkVersion 23
-        versionCode 101011
-        versionName "1.01.011"
+        versionCode 101008
+        versionName "1.01.008"
     }
     buildTypes {
         release {
@@ -23,8 +22,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
-    compile project(":groupingadapter")
-    //compile 'com.google.guava:guava:19.0'
 }

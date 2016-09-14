@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview.adapter;
+package ru.ncom.groupingrvadapter;
 
 public interface Titled {
         String getTitle() ;

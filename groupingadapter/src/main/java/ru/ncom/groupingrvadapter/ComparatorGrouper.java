@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview.adapter;
+package ru.ncom.groupingrvadapter;
 
 import java.util.Comparator;
 
@@ -11,5 +11,5 @@ public interface ComparatorGrouper<T>  extends Comparator<T> {
      * @param m
      * @return
      */
-    public String getGroupTitle(T m) ;
+    String getGroupTitle(T m) ;
 }

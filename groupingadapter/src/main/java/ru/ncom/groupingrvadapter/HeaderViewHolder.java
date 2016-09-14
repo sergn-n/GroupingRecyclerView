@@ -1,22 +1,20 @@
-package ru.ncom.recyclerview.adapter;
+package ru.ncom.groupingrvadapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
-import ru.ncom.recyclerview.R;
-
 /**
- * Created by gerg on 08.09.2016.
+ * Default ViewHolder for a header layout. Knows only title TextView.
  */
 public class HeaderViewHolder extends RecyclerView.ViewHolder
         implements TitledViewHolder {
 
-    public TextView title;
+    public final TextView title;
 
-    public HeaderViewHolder(View view) {
+    public HeaderViewHolder(View view, int titleTextViewId) {
         super(view);
-        title = (TextView) view.findViewById(R.id.title);
+        title = (TextView) view.findViewById(titleTextViewId);
     }
 
     @Override

@@ -1,17 +1,19 @@
 package ru.ncom.recyclerview.model;
 
-import android.os.AsyncTask;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import ru.ncom.groupingrvadapter.ComparatorGrouper;
+import ru.ncom.groupingrvadapter.Db;
+
+
 /**
  * Created by gerg on 05.09.2016.
  */
 
-public class MovieDb
+public class MovieDb implements Db<Movie>
 {
     // Data
     private List<Movie> movieList = new ArrayList<>();
@@ -66,13 +68,23 @@ public class MovieDb
         movie = new Movie("Guardians of the Galaxy", "Science Fiction & Fantasy", "2014");
         movieList.add(movie);
 
+        // repeat 2**3 times
+        for (int i=0; i<3; i++)
+            movieList.addAll(movieList);
     }
 
-    public List<Movie> getMovieList() { return movieList;}
+    @Override
+    public List<Movie> getDataList() { return movieList;}
 
+    @Override
     public List<Movie> orderBy(Comparator<Movie> mcb) {
         Collections.sort(movieList,mcb);
         return movieList;
     }
 
+    @Override
+    public ComparatorGrouper<Movie> getComparatorGrouper(String orderByFieldName) {
+        //return Movie.getComparatorGrouper(orderByFieldName);
+        return new Movie.MovieComparatorGrouper(orderByFieldName);
+    }
 }
