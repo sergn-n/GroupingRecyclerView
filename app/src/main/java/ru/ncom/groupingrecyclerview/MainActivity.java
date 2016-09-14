@@ -134,8 +134,8 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
-        // Also set listener for a TextView of the row in adapter / viewholder.
-        // First appears Toast from addOnItemTouchListener, then from TextView
+        // If a listener is also set for a TextView of the row in adapter / viewholder,
+        // first  Toast from RecyclerTouchListener appears, then from TextView
         mRecyclerView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), mRecyclerView, new ClickListener() {
             private final String TAG = "ClickListener(Main)";
 
@@ -156,7 +156,16 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onLongClick(View view, int position) {
-
+                Log.d(TAG, "onLongClick: at postype=" +(position%3));
+                switch (position%3) {
+                    case 0:
+                        view.setActivated(true);
+                        break;
+                    case 1:
+                        view.setSelected(true);
+                        break;
+                    default:
+                }
             }
         }));
     }
@@ -236,6 +245,7 @@ public class MainActivity extends AppCompatActivity
 
                 @Override
                 public void onLongPress(MotionEvent e) {
+                    Log.d(TAG, "onLongPress: e.time = " + e.getEventTime());
                     View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
                     if (child != null && clickListener != null) {
                         clickListener.onLongClick(child, recyclerView.getChildPosition(child));
@@ -249,10 +259,11 @@ public class MainActivity extends AppCompatActivity
 
             View child = rv.findChildViewUnder(e.getX(), e.getY());
             //RecyclerView.ViewHolder holder = rv.getChildViewHolder(child);
-            boolean touchEventDetected = gestureDetector.onTouchEvent(e);
             Log.d(TAG, "onInterceptTouchEvent: child Class="
-                    + (child != null ? child.getClass().getName() : "*No child*")
-                    + "\n \t, gestureDetector.onTouchEvent(e)=" + touchEventDetected);
+                    + (child != null ? child.getClass().getName() : "*No child*") );
+            boolean touchEventDetected = gestureDetector.onTouchEvent(e);
+            Log.d(TAG, "onInterceptTouchEvent: gestureDetector.onTouchEvent(e)=" + touchEventDetected
+                +"\t\n e.time = "+ e.getEventTime());
             if (child != null && clickListener != null && touchEventDetected) {
                 clickListener.onClick(child, rv.getChildPosition(child));
             }
@@ -268,5 +279,17 @@ public class MainActivity extends AppCompatActivity
         public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
             Log.d(TAG, "onRequestDisallowInterceptTouchEvent: ");
         }
+/* This is long press: GestureDetector#onLongPress fires 2 times after GestureDetector#onTouchEvent() exited. Weird.
+Looks like GestureDetector#onTouchEvent() makes GestureDetector keep listening to touch events till the gesture ends.
+
+09-14 17:59:02.257 21628-21628/ru.ncom.groupingrecyclerview D/RecyclerTouchListener: onInterceptTouchEvent: child Class=android.widget.RelativeLayout
+09-14 17:59:02.257 21628-21628/ru.ncom.groupingrecyclerview D/RecyclerTouchListener: onInterceptTouchEvent: gestureDetector.onTouchEvent(e)=false
+                                                                                      e.time = 4005907
+09-14 17:59:02.889 21628-21628/ru.ncom.groupingrecyclerview D/GestureDetector: onLongPress: e.time = 4005907
+09-14 17:59:02.889 21628-21628/ru.ncom.groupingrecyclerview D/ClickListener(Main): onLongClick: at postype=2
+09-14 17:59:08.020 21628-21628/ru.ncom.groupingrecyclerview D/RecyclerTouchListener: onInterceptTouchEvent: child Class=android.widget.RelativeLayout
+09-14 17:59:08.020 21628-21628/ru.ncom.groupingrecyclerview D/RecyclerTouchListener: onInterceptTouchEvent: gestureDetector.onTouchEvent(e)=false
+                                                                                      e.time = 4011676
+ */
     }
 }
