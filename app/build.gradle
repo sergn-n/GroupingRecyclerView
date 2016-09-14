@@ -5,11 +5,11 @@ android {
     buildToolsVersion "23.0.3" //24.0.2  - fails!
 
     defaultConfig {
-        applicationId "ru.ncom.recyclerview"
+        applicationId "ru.ncom.groupingrecyclerview"
         minSdkVersion 14 //holo colors used
         targetSdkVersion 23
-        versionCode 101012
-        versionName "1.01.012"
+        versionCode 101013
+        versionName "1.01.013"
     }
     buildTypes {
         release {

@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Recycler View</string>
+    <string name="app_name">Grouping Recycler View</string>
     <string name="action_settings">Settings</string>
 </resources>

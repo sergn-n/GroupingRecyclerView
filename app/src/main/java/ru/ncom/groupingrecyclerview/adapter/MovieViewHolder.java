@@ -1,10 +1,10 @@
-package ru.ncom.recyclerview.adapter;
+package ru.ncom.groupingrecyclerview.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
-import ru.ncom.recyclerview.R;
+import ru.ncom.groupingrecyclerview.R;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
 
 public class MovieViewHolder extends RecyclerView.ViewHolder

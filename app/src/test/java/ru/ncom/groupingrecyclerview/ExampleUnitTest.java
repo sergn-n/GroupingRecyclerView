@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview;
+package ru.ncom.groupingrecyclerview;
 
 import org.junit.Test;
 

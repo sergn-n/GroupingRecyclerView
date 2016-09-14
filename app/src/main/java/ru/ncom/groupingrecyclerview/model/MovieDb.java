@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview.model;
+package ru.ncom.groupingrecyclerview.model;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,4 +1,4 @@
-package ru.ncom.recyclerview;
+package ru.ncom.groupingrecyclerview;
 // Reworked http://www.androidhive.info/2016/01/android-working-with-recycler-view/
 import android.content.Context;
 import android.os.Bundle;
@@ -23,9 +23,9 @@ import java.util.List;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
 
-import ru.ncom.recyclerview.adapter.MoviesAdapter;
-import ru.ncom.recyclerview.model.Movie;
-import ru.ncom.recyclerview.model.MovieDb;
+import ru.ncom.groupingrecyclerview.adapter.MoviesAdapter;
+import ru.ncom.groupingrecyclerview.model.Movie;
+import ru.ncom.groupingrecyclerview.model.MovieDb;
 
 
 public class MainActivity extends AppCompatActivity
