@@ -41,10 +41,31 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         this.mRecyclerView = rv;
         this.mDb = db;
         // initially itemsList is just source data
+        load();
+    }
+
+    private void load() {
+        saveCollapsedHeaders();
+        itemsList.clear();
         List<T> ml = mDb.getDataList();
         for (int i = 0; i < ml.size(); i++){
             itemsList.add(ml.get(i));
         }
+    }
+
+    private void saveCollapsedHeaders(){
+        mCollapsedHeaders = new ArrayList<>();
+        for (int i=0; i<itemsList.size(); i++){
+            Titled itm = itemsList.get(i);
+            if ((!isDataClass(itm)) && ((Header<T>)itm).isCollapsed())
+                mCollapsedHeaders.add(itm.getTitle());
+        }
+    }
+
+    public void reload(){
+        load();
+        if (mSortFieldName != null)
+            orderBy(mSortFieldName);
     }
 
     private boolean isDataClass(Titled tobj) {
@@ -146,13 +167,8 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
      */
     public void onSaveInstanceState(Bundle outState){
         outState.putString(SORTFIELDNAME,mSortFieldName);
-        ArrayList<String> collapsedHeaders = new ArrayList<>();
-        for (int i=0; i<itemsList.size(); i++){
-            Titled itm = itemsList.get(i);
-            if ((!isDataClass(itm)) && ((Header<T>)itm).isCollapsed())
-                collapsedHeaders.add(itm.getTitle());
-        }
-        outState.putStringArrayList(COLLAPSEDHEADERS,collapsedHeaders);
+        saveCollapsedHeaders();
+        outState.putStringArrayList(COLLAPSEDHEADERS,mCollapsedHeaders);
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState){
