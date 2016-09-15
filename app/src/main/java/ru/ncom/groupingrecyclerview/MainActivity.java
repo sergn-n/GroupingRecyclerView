@@ -27,7 +27,7 @@ import ru.ncom.groupingrecyclerview.adapter.MoviesAdapter;
 import ru.ncom.groupingrecyclerview.model.Movie;
 import ru.ncom.groupingrecyclerview.model.MovieDb;
 
-
+// GroupingRecyclerView demo activity : Movies
 public class MainActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
 
@@ -170,6 +170,12 @@ public class MainActivity extends AppCompatActivity
         }));
     }
 
+    public void moreButtonClicked(View v) {
+        // Do not remember added movies, will be reset by screen rotation.
+        mMovieDb.cloneData(1);
+        mAdapter.reload();
+    }
+
     public void goButtonClicked(View v) {
         int position = mSortSpinner.getSelectedItemPosition();
         if (position > 0) {
@@ -279,8 +285,8 @@ public class MainActivity extends AppCompatActivity
         public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
             Log.d(TAG, "onRequestDisallowInterceptTouchEvent: ");
         }
-/* This is long press: GestureDetector#onLongPress fires 2 times after GestureDetector#onTouchEvent() exited. Weird.
-Looks like GestureDetector#onTouchEvent() makes GestureDetector keep listening to touch events till the gesture ends.
+/* This is long press: GestureDetector#onLongPress fires 2 times after GestureDetector#onTouchEvent() exited.
+Looks like GestureDetector#onTouchEvent() makes GestureDetector keep listening to touch-related events till the gesture ends.
 
 09-14 17:59:02.257 21628-21628/ru.ncom.groupingrecyclerview D/RecyclerTouchListener: onInterceptTouchEvent: child Class=android.widget.RelativeLayout
 09-14 17:59:02.257 21628-21628/ru.ncom.groupingrecyclerview D/RecyclerTouchListener: onInterceptTouchEvent: gestureDetector.onTouchEvent(e)=false

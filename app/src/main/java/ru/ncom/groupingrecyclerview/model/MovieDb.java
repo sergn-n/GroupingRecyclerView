@@ -67,9 +67,14 @@ public class MovieDb implements Db<Movie>
 
         movie = new Movie("Guardians of the Galaxy", "Science Fiction & Fantasy", "2014");
         movieList.add(movie);
+    }
 
-        // repeat 2**3 times
-        for (int i=0; i<3; i++)
+    /**
+     * Repeat current list 2**n times (n>0)
+     * @param n
+     */
+    public void cloneData(int n) {
+        for (int i=0; i<n; i++)
             movieList.addAll(movieList);
     }
 
