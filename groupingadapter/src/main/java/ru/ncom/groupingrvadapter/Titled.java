@@ -1,6 +1,13 @@
 package ru.ncom.groupingrvadapter;
 
+/**
+ * Has Title and Selected properties
+ */
 public interface Titled {
-        String getTitle() ;
-        void setTitle(String name);
+    // title
+    String getTitle();
+    void setTitle(String title);
+    // selected
+    boolean isSelected();
+    void setSelected(boolean selected);
 }

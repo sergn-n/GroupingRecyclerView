@@ -4,26 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created  on 12.09.2016.
+ * Default header
  */
-public class Header<T extends Titled> implements Titled {
+public class Header<T extends Titled> extends TitledItem {
 
-    private String title = null;
     private boolean isCollapsed = false;
     private final List<T> childList = new ArrayList<>();
 
     public Header(String title) {
-        this.title = title;
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    @Override
-    public void setTitle(String name) {
-        this.title = name;
+        super(title);
     }
 
     public boolean isCollapsed() {
