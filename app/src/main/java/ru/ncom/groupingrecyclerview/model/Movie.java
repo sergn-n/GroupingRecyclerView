@@ -5,26 +5,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import ru.ncom.groupingrvadapter.ComparatorGrouper;
-import ru.ncom.groupingrvadapter.Titled;
+import ru.ncom.groupingrvadapter.TitledItem;
 
-public class Movie implements Titled {
+public class Movie extends TitledItem {
 
-    private String title, genre, year;
+    private String genre, year;
 
     public Movie(String title, String genre, String year) {
-        this.title = title;
+        super(title);
         this.genre = genre;
         this.year = year;
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    @Override
-    public void setTitle(String name) {
-        this.title = name;
     }
 
     public String getYear() {
