@@ -163,6 +163,7 @@ public class MainActivity extends AppCompatActivity
                         break;
                     case 1:
                         view.setSelected(true);
+                        mAdapter.getAt(position).setSelected(true);
                         break;
                     default:
                 }
@@ -271,7 +272,7 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "onInterceptTouchEvent: gestureDetector.onTouchEvent(e)=" + touchEventDetected
                 +"\t\n e.time = "+ e.getEventTime());
             if (child != null && clickListener != null && touchEventDetected) {
-                clickListener.onClick(child, rv.getChildPosition(child));
+                clickListener.onClick(child, rv.getChildLayoutPosition(child));
             }
             return false;
         }
