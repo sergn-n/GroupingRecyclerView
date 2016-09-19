@@ -101,13 +101,14 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
     }
 
     /**
-     * Sets text value of the title TextView, see {@link TitledViewHolder#getTitleView()}. If current view is a header
+     * Sets text value of the title TextView, see {@link TitledViewHolder#getTitleView()}. Sets itemView selection. If current view is a header
      * adds also a number of items under the header.
      * @param holder
      * @param position
      */
-    public void BindTitleView(RecyclerView.ViewHolder holder, int position) {
+    public void bindTitleView(RecyclerView.ViewHolder holder, int position) {
         Titled item = itemsList.get(position);
+        holder.itemView.setSelected(item.isSelected());
         TextView v = ((TitledViewHolder)holder).getTitleView();
         String txt = item.getTitle();
         if ( !isDataClass(item) ) {
