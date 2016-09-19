@@ -47,7 +47,10 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+
         Titled item = getAt(position);
+        // Default binding for Header
+        bindTitleView(holder, position);
         // My binding for Data
         if ((item instanceof Movie) && (holder instanceof MovieViewHolder)) {
             MovieViewHolder vh = (MovieViewHolder)holder;
@@ -55,8 +58,6 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
             vh.genre.setText(m.getGenre());
             vh.year.setText(m.getYear());
         }
-        // Default binding for Header
-        BindTitleView(holder, position);
     }
 
     // Optional:
@@ -166,15 +167,17 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
         private final String TAG = "ToastCL(Adpt)";
         @Override
         public void onClick(final View view) {
-            String item = null;
+            String itemText = null;
             Log.d(TAG, "onClick: view Class=" + view.getClass().getName());
             if (view instanceof RelativeLayout) {
                 int itemPosition = mRecyclerView.getChildLayoutPosition(view);
-                item = "**"+getAt(itemPosition).getTitle();
+                itemText = "**"+getAt(itemPosition).getTitle();
             } else if (view instanceof TextView) {
-                item = ((TextView)view).getText().toString();
+                itemText = ((TextView)view).getText().toString();
             }
-            Toast.makeText(mRecyclerView.getContext(), item, Toast.LENGTH_LONG).show();
+            Toast.makeText(mRecyclerView.getContext(), itemText, Toast.LENGTH_LONG).show();
+            // selection test
+
         }
     }
 }
