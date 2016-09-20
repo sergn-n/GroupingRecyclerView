@@ -18,6 +18,7 @@ public class MovieViewHolder extends RecyclerView.ViewHolder
         genre = (TextView) view.findViewById(R.id.genre);
         year = (TextView) view.findViewById(R.id.year);
         // genre and year are declared clickable in XML;
+        // The listener is called on long click too!
         year.setOnClickListener(onClickListener);
     }
 
