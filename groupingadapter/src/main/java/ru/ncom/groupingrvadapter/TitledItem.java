@@ -1,9 +1,11 @@
 package ru.ncom.groupingrvadapter;
 
+import java.io.Serializable;
+
 /**
  * Convenience class, TitledItem stub
  */
-public class TitledItem implements Titled{
+public class TitledItem implements Titled,Serializable{
 
     private String title = null;
     private boolean isSelected = false;
