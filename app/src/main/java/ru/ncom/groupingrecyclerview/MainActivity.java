@@ -1,6 +1,6 @@
 package ru.ncom.groupingrecyclerview;
 // Reworked http://www.androidhive.info/2016/01/android-working-with-recycler-view/
-import android.content.Context;
+
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -8,8 +8,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,7 +31,7 @@ public class MainActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
 
     private final String TAG = "Main";
-    private MovieDb mMovieDb = new MovieDb();
+    private MovieDb mMovieDb;
     private RecyclerView mRecyclerView;
     private Spinner mSortSpinner;
     private MoviesAdapter mAdapter;
@@ -50,6 +48,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mMovieDb = new MovieDb(getApplicationContext());
         // Set sort mode spinner
         final CharSequence[] sortModes = new CharSequence[Movie.getOrderByFields().size()+1];
         sortModes[0] = "";
@@ -163,6 +162,18 @@ public class MainActivity extends AppCompatActivity
                 mAdapter.getAt(position).setSelected(true);
             }
         }));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop: ");
+        try {
+            mMovieDb.save();
+        }
+        catch (Exception e){
+            Log.e(TAG, "onStop: save() failed ",e);
+        }
     }
 
     public void moreButtonClicked(View v) {

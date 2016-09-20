@@ -1,5 +1,6 @@
 package ru.ncom.groupingrecyclerview.model;
 
+import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 import ru.ncom.groupingrvadapter.ComparatorGrouper;
 import ru.ncom.groupingrvadapter.TitledItem;
 
-public class Movie extends TitledItem {
+public class Movie extends TitledItem implements Serializable {
 
     private String genre, year;
 

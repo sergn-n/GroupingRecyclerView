@@ -1,5 +1,14 @@
 package ru.ncom.groupingrecyclerview.model;
 
+import android.content.Context;
+import android.util.Log;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,10 +24,35 @@ import ru.ncom.groupingrvadapter.Db;
 
 public class MovieDb implements Db<Movie>
 {
-    // Data
-    private List<Movie> movieList = new ArrayList<>();
+    private static String FILENAME ="Movies.ser";
+    private static String TAG ="MovieDb";
 
-    public MovieDb() {
+    private Context mContext;
+    // Data
+    private ArrayList<Movie> movieList;
+
+    public MovieDb(Context ctx) {
+        mContext = ctx;
+        try {
+            read();
+            Log.d(TAG, "Read from "+ FILENAME);
+        }
+        catch (Exception e) {
+            // no file to read, generate data and save.
+            generate();
+            try {
+                save();
+                Log.d(TAG, "Generated and saved to "+ FILENAME);
+            }
+            catch (Exception ex)
+            {
+                Log.e(TAG,"Failed to save to "+ FILENAME, ex);
+            }
+        }
+    }
+
+    private void generate() {
+        movieList = new ArrayList<>();
 
         Movie movie = new Movie("Mad Max: Fury Road", "Action & Adventure", "2015");
         movieList.add(movie);
@@ -67,6 +101,23 @@ public class MovieDb implements Db<Movie>
 
         movie = new Movie("Guardians of the Galaxy", "Science Fiction & Fantasy", "2014");
         movieList.add(movie);
+
+    }
+
+    private void read() throws IOException, ClassNotFoundException {
+        FileInputStream fin = mContext.openFileInput(FILENAME);
+        ObjectInputStream ois = new ObjectInputStream(fin);
+        movieList = (ArrayList<Movie>)ois.readObject();
+        //Movie m = (Movie)ois.readObject();
+        fin.close();
+    }
+
+    public void save() throws IOException{
+        FileOutputStream fout = mContext.openFileOutput(FILENAME, Context.MODE_PRIVATE);
+        ObjectOutputStream oos = new ObjectOutputStream(fout);
+        oos.writeObject(movieList);
+        //oos.writeObject(movieList.get(0));
+        fout.close();
     }
 
     /**
