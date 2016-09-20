@@ -8,8 +8,8 @@ android {
         applicationId "ru.ncom.groupingrecyclerview"
         minSdkVersion 14 //holo colors used
         targetSdkVersion 23
-        versionCode 101014
-        versionName "1.01.014"
+        versionCode 101015
+        versionName "1.01.015"
     }
     buildTypes {
         release {

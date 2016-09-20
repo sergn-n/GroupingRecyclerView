@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import ru.ncom.groupingrvadapter.Selectable;
 import ru.ncom.groupingrvadapter.SimpleRecyclerTouchListener;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
@@ -86,41 +87,6 @@ public class MainActivity extends AppCompatActivity
             mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
         }
 
-        /* Use go button instead
-        mSortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            private final static String TAG = "OnItemSelectedListener";
-
-            boolean firstOnItemSelected = true;
-
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "mSortSpinner onItemSelected: pos=" + position +" first call="+firstOnItemSelected);
-                // When setting listener, framework calls its onItemSelected() so
-                // Spinner's onItemSelected is called twice on screen rotation.
-                // Ignore first call.
-                if(firstOnItemSelected) {
-                    firstOnItemSelected = false;
-                    return;
-                }
-                if (position > 0) {
-                    String sortField = (String)parent.getItemAtPosition(position);
-                    if (position > 1) {
-                        // Use sync sort for GENRE and YEAR
-                        mProgressView.setText(" Sync sort method.");
-                        mAdapter.orderBy(sortField);
-                    } else {
-                        // Use async sort for TITLE
-                        mAdapter.orderByAsync(sortField, MainActivity.this);
-                    }
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-        */
         mProgressView = (TextView) findViewById(R.id.orderProgress);
 
         // Set movie recycler
@@ -159,7 +125,9 @@ public class MainActivity extends AppCompatActivity
             public void onLongClick(View view, int position) {
                 Log.d(TAG, "onLongClick: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
                 view.setSelected(true);
-                mAdapter.getAt(position).setSelected(true);
+                Titled item = mAdapter.getAt(position);
+                if (item instanceof Selectable)
+                    ((Selectable)item).setSelected(true);
             }
         }));
     }
@@ -168,6 +136,7 @@ public class MainActivity extends AppCompatActivity
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ");
+        // Save data at screen rotation. Data will be restored in OnCreate().
         try {
             mMovieDb.save();
         }
@@ -177,7 +146,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void moreButtonClicked(View v) {
-        // Do not remember added movies, will be reset by screen rotation.
         mMovieDb.cloneData(1);
         mAdapter.reload();
     }
@@ -209,7 +177,7 @@ public class MainActivity extends AppCompatActivity
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         mAdapter.onRestoreInstanceState(savedInstanceState);
-        // Must restore mAdapter state first
+        // Must restore mAdapter state before it
         mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
     }
 

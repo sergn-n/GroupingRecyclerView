@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import ru.ncom.groupingrvadapter.ComparatorGrouper;
-import ru.ncom.groupingrvadapter.TitledItem;
+import ru.ncom.groupingrvadapter.TitledSelectableItem;
 
-public class Movie extends TitledItem implements Serializable {
+public class Movie extends TitledSelectableItem implements Serializable {
 
     private String genre, year;
 
