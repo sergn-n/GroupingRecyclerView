@@ -3,14 +3,14 @@ package ru.ncom.groupingrvadapter;
 import java.io.Serializable;
 
 /**
- * Convenience class, TitledItem stub
+ * Convenience class, item stub
  */
-public class TitledItem implements Titled,Serializable{
+public class TitledSelectableItem implements Titled, Selectable, Serializable{
 
     private String title = null;
     private boolean isSelected = false;
 
-    public TitledItem(String title) {
+    public TitledSelectableItem(String title) {
         this.title = title;
     }
 

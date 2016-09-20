@@ -108,7 +108,8 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
      */
     public void bindTitleView(RecyclerView.ViewHolder holder, int position) {
         Titled item = itemsList.get(position);
-        holder.itemView.setSelected(item.isSelected());
+        if (item instanceof Selectable)
+            holder.itemView.setSelected(((Selectable)item).isSelected());
         TextView v = ((TitledViewHolder)holder).getTitleView();
         String txt = item.getTitle();
         if ( !isDataClass(item) ) {

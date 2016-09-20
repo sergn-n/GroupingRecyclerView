@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Default header
  */
-public class Header<T extends Titled> extends TitledItem {
+public class Header<T extends Titled> extends TitledSelectableItem {
 
     private boolean isCollapsed = false;
     private final List<T> childList = new ArrayList<>();
