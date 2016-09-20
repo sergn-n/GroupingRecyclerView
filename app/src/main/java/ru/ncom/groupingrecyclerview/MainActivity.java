@@ -2,12 +2,15 @@ package ru.ncom.groupingrecyclerview;
 // Reworked http://www.androidhive.info/2016/01/android-working-with-recycler-view/
 
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -32,9 +35,14 @@ public class MainActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
 
     private final String TAG = "Main";
+
     private MovieDb mMovieDb;
     private RecyclerView mRecyclerView;
+
     private Spinner mSortSpinner;
+    private final String SORTSPINNERPOS = "SORTSPINNERPOS";
+    private int mSortSpinnerSavedPos = -1;
+
     private MoviesAdapter mAdapter;
     private TextView mProgressView;
     private Button mGoSort;
@@ -50,22 +58,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         mMovieDb = new MovieDb(getApplicationContext());
-        // Set sort mode spinner
-        final CharSequence[] sortModes = new CharSequence[Movie.getOrderByFields().size()+1];
-        sortModes[0] = "";
-        List<String> movieOrderByFields = Movie.getOrderByFields();
-        for (int i=0; i< movieOrderByFields.size(); i++){
-            sortModes[i+1] = movieOrderByFields.get(i);
-        }
 
-        mSortSpinner = (Spinner) findViewById(R.id.spinner);
-        mGoSort = (Button)findViewById(R.id.go_button);
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> spinnerAdapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortModes);
-        // Specify the layout to use when the list of choices appears
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSortSpinner.setAdapter(spinnerAdapter);
         mSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
             private final static String TAG = "OnItemSelectedListener";
 
@@ -82,10 +75,6 @@ public class MainActivity extends AppCompatActivity
 
             }
         };
-        if (savedInstanceState == null) {
-            mGoSort.setEnabled(false);
-            mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
-        }
 
         mProgressView = (TextView) findViewById(R.id.orderProgress);
 
@@ -133,6 +122,45 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        MenuItem item = menu.findItem(R.id.spinner);
+        mSortSpinner = (Spinner) MenuItemCompat.getActionView(item);
+
+        //    Set sort mode spinner
+        final CharSequence[] sortModes = new CharSequence[Movie.getOrderByFields().size()+1];
+        sortModes[0] = "";
+        List<String> movieOrderByFields = Movie.getOrderByFields();
+        for (int i=0; i< movieOrderByFields.size(); i++){
+            sortModes[i+1] = movieOrderByFields.get(i);
+        }
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> spinnerAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortModes);
+        // Specify the layout to use when the list of choices appears
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSortSpinner.setAdapter(spinnerAdapter);
+        mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
+        if (mSortSpinnerSavedPos >= 0) // was restored
+            mSortSpinner.setSelection(mSortSpinnerSavedPos);
+
+        mGoSort = (Button) MenuItemCompat.getActionView(
+                menu.findItem(R.id.go_button));
+        mGoSort.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goButtonClicked();
+            }
+        });
+
+        //if (savedInstanceState == null) {
+            mGoSort.setEnabled(false);
+        //}
+
+        return true;
+    }
+    @Override
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ");
@@ -150,7 +178,7 @@ public class MainActivity extends AppCompatActivity
         mAdapter.reload();
     }
 
-    public void goButtonClicked(View v) {
+    public void goButtonClicked() {
         int position = mSortSpinner.getSelectedItemPosition();
         if (position > 0) {
             String sortField = (String) mSortSpinner.getSelectedItem();
@@ -171,6 +199,7 @@ public class MainActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mAdapter.onSaveInstanceState(outState);
+        outState.putInt(SORTSPINNERPOS, mSortSpinner.getSelectedItemPosition());
     }
 
     @Override
@@ -178,7 +207,8 @@ public class MainActivity extends AppCompatActivity
         super.onRestoreInstanceState(savedInstanceState);
         mAdapter.onRestoreInstanceState(savedInstanceState);
         // Must restore mAdapter state before it
-        mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
+        mSortSpinnerSavedPos = savedInstanceState.getInt(SORTSPINNERPOS);
+        //mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
     }
 
     // ProgressListener members
