@@ -9,65 +9,6 @@
     tools:showIn="@layout/activity_main"
     tools:context=".MainActivity">
 
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/sort_panel"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="2dp"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="3dp">
-
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="More Movies"
-            android:id="@+id/clone_button"
-            android:clickable="true"
-            android:enabled="true"
-            android:onClick="moreButtonClicked"
-            android:layout_marginTop="3dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16dp"
-            android:text="Order by "
-            android:textColor="@android:color/black"
-            android:background="@android:color/darker_gray"
-            android:layout_marginRight="3dp"/>
-<!--
-        <Spinner
-            android:layout_width="140dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/spinner"
-            android:background="@android:color/darker_gray"
-            android:popupBackground="@android:color/holo_blue_light"
-            android:layout_marginRight="3dp" />
-
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Go"
-            android:id="@+id/go_button"
-            android:clickable="true"
-            android:enabled="true"
-            android:onClick="goButtonClicked"
-            android:layout_marginTop="3dp"/>
--->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="16dp"
-            android:id="@+id/orderProgress"
-            android:textColor="@android:color/black"
-            android:background="@android:color/holo_blue_light"/>
-    </LinearLayout>
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"

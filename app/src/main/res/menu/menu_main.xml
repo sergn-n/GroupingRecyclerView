@@ -7,24 +7,30 @@
         android:title="@string/action_settings"
         app:showAsAction="never" />
 
+    <!--
+        android:popupBackground="@android:color/holo_blue_light"
+    -->
     <item
         android:id="@+id/spinner"
         app:actionViewClass="android.widget.Spinner"
         android:orderInCategory="200"
         android:title="Sort Spinner"
-        android:background="@android:color/darker_gray"
-        android:popupBackground="@android:color/holo_blue_light"
         app:showAsAction="always" />
 
     <!--
-           android:icon="@drawable/ic_user"
-           android:onClick="goButtonClicked"
+        app:actionViewClass="android.widget.Button"
     -->
     <item
         android:id="@+id/go_button"
-        app:actionViewClass="android.widget.Button"
         android:orderInCategory="300"
         android:title="Sort"
-        app:showAsAction="ifRoom" />
+        android:icon="@drawable/ic_go"
+        android:onClick="goButtonClicked"
+        app:showAsAction="always" />
+
+    <item android:id="@+id/more_movies"
+        android:title="More movies"
+        android:onClick="moreButtonClicked"
+        app:showAsAction="never" />
 
 </menu>

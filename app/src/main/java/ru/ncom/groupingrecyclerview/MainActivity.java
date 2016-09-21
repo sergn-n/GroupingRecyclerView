@@ -38,15 +38,15 @@ public class MainActivity extends AppCompatActivity
 
     private MovieDb mMovieDb;
     private RecyclerView mRecyclerView;
+    private MoviesAdapter mAdapter;
 
     private Spinner mSortSpinner;
     private final String SORTSPINNERPOS = "SORTSPINNERPOS";
     private int mSortSpinnerSavedPos = -1;
-
-    private MoviesAdapter mAdapter;
-    private TextView mProgressView;
-    private Button mGoSort;
+    private ArrayAdapter<CharSequence> mSpinnerAdapter;
     private AdapterView.OnItemSelectedListener mSpinnerOnItemSelectedListener;
+
+    private MenuItem mGoSort;
 
     final String ASYNCSORT = " Async sort method: ";
 
@@ -59,6 +59,20 @@ public class MainActivity extends AppCompatActivity
 
         mMovieDb = new MovieDb(getApplicationContext());
 
+        // * for mSortSpinner
+        // ** adapter
+        final CharSequence[] sortModes = new CharSequence[Movie.getOrderByFields().size()+1];
+        sortModes[0] = "";
+        List<String> movieOrderByFields = Movie.getOrderByFields();
+        for (int i=0; i< movieOrderByFields.size(); i++){
+            sortModes[i+1] = movieOrderByFields.get(i);
+        }
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        mSpinnerAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortModes);
+        // Specify the layout to use when the list of choices appears
+        mSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // ** listener
         mSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
             private final static String TAG = "OnItemSelectedListener";
 
@@ -76,9 +90,7 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        mProgressView = (TextView) findViewById(R.id.orderProgress);
-
-        // Set movie recycler
+        // * Set movie recycler
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
         mAdapter = new MoviesAdapter(mMovieDb, mRecyclerView);
@@ -125,41 +137,23 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        MenuItem item = menu.findItem(R.id.spinner);
-        mSortSpinner = (Spinner) MenuItemCompat.getActionView(item);
+        mGoSort = menu.findItem(R.id.go_button);
+        mGoSort.setEnabled(false); // default
 
-        //    Set sort mode spinner
-        final CharSequence[] sortModes = new CharSequence[Movie.getOrderByFields().size()+1];
-        sortModes[0] = "";
-        List<String> movieOrderByFields = Movie.getOrderByFields();
-        for (int i=0; i< movieOrderByFields.size(); i++){
-            sortModes[i+1] = movieOrderByFields.get(i);
-        }
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> spinnerAdapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortModes);
-        // Specify the layout to use when the list of choices appears
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSortSpinner.setAdapter(spinnerAdapter);
+        // Set sort mode spinner
+        MenuItem menuItem = menu.findItem(R.id.spinner);
+        mSortSpinner = (Spinner)MenuItemCompat.getActionView(menuItem);
+        mSortSpinner.setAdapter(mSpinnerAdapter);
         mSortSpinner.setOnItemSelectedListener(mSpinnerOnItemSelectedListener);
-        if (mSortSpinnerSavedPos >= 0) // was restored
+        if (mSortSpinnerSavedPos >= 0) { // activity was restored
             mSortSpinner.setSelection(mSortSpinnerSavedPos);
-
-        mGoSort = (Button) MenuItemCompat.getActionView(
-                menu.findItem(R.id.go_button));
-        mGoSort.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goButtonClicked();
-            }
-        });
-
-        //if (savedInstanceState == null) {
-            mGoSort.setEnabled(false);
-        //}
-
+            // Enable mGoSort?
+            String sortField = (String)mSortSpinner.getItemAtPosition(mSortSpinnerSavedPos);
+            mGoSort.setEnabled(mSortSpinnerSavedPos>0 && !sortField.equals(mAdapter.getSortField()));
+        }
         return true;
     }
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -173,12 +167,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void moreButtonClicked(View v) {
+    public void moreButtonClicked(MenuItem itm) {
         mMovieDb.cloneData(1);
         mAdapter.reload();
     }
 
-    public void goButtonClicked() {
+    public void goButtonClicked(MenuItem itm) {
         int position = mSortSpinner.getSelectedItemPosition();
         if (position > 0) {
             String sortField = (String) mSortSpinner.getSelectedItem();
@@ -186,7 +180,8 @@ public class MainActivity extends AppCompatActivity
 
             if (position > 1) {
                 // Use sync sort for GENRE and YEAR
-                mProgressView.setText(" Sync sort method.");
+                Toast.makeText(getApplicationContext()," Sync sort method.",Toast.LENGTH_SHORT)
+                        .show();
                 mAdapter.orderBy(sortField);
             } else {
                 // Use async sort for TITLE
@@ -215,17 +210,20 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onStart(String msg) {
-        mProgressView.setText(ASYNCSORT+msg);
+        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
+                .show();
     }
 
     @Override
     public void onProgess(String msg) {
-        mProgressView.setText(ASYNCSORT+msg);
+        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
+                .show();
     }
 
     @Override
     public void onDone(String msg) {
-        mProgressView.setText(ASYNCSORT+msg);
+        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
+                .show();
         mAdapter.notifyDataSetChanged();
     }
 }
