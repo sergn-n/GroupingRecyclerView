@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "mSortSpinner onItemSelected: adapterSort=" + mAdapter.getSortField() );
                 String sortField = (String)parent.getItemAtPosition(position);
                 mGoSort.setEnabled( (position != 0) && !sortField.equals(mAdapter.getSortField()));
+                // will loop infinitely:
+                //invalidateOptionsMenu();
             }
 
             @Override
@@ -125,10 +127,11 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onLongClick(View view, int position) {
                 Log.d(TAG, "onLongClick: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
-                view.setSelected(true);
-                Titled item = mAdapter.getAt(position);
-                if (item instanceof Selectable)
-                    ((Selectable)item).setSelected(true);
+//                boolean newState = !view.isSelected();
+//                view.setSelected(newState);
+//                Titled item = mAdapter.getAt(position);
+//                if (item instanceof Selectable)
+//                    ((Selectable)item).setSelected(newState);
             }
         }));
     }
