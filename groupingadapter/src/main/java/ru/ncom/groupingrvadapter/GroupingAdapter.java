@@ -14,7 +14,8 @@ import java.util.List;
 /**
  * Created by Serg on 11.09.2016.
  */
-public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+            implements TitledGetterAtPosition {
 
     /**
      * Row type: row of data of T type
@@ -119,6 +120,7 @@ public  abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ad
         v.setText(txt);
     }
 
+    @Override
     public Titled getAt(int position) {
         return itemsList.get(position);
     }

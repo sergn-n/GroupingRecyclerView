@@ -7,7 +7,8 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
- * Detects click and long click on RecyclerView row
+ * Detects click and long click on RecyclerView row. Toggles row view selection and if applicable
+ * toggles item selection in adapter of the RecyclerView. This is done before onLongClick is called.
  */
 public class SimpleRecyclerTouchListener implements RecyclerView.OnItemTouchListener {
 
@@ -32,8 +33,20 @@ public class SimpleRecyclerTouchListener implements RecyclerView.OnItemTouchList
             @Override
             public void onLongPress(MotionEvent e) {
                 View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
-                if (child != null && clickListener != null) {
-                    clickListener.onLongClick(child, recyclerView.getChildPosition(child));
+                if (child != null){
+                    boolean newState = !child.isSelected();
+                    int position = recyclerView.getChildLayoutPosition(child);
+                    child.setSelected(newState);
+                    // is it a proper adapter?
+                    if (recyclerView.getAdapter() instanceof TitledGetterAtPosition) {
+                        Titled item = ((TitledGetterAtPosition)recyclerView.getAdapter()).getAt(position);
+                        if (item instanceof Selectable)
+                            ((Selectable)item).setSelected(newState);
+                    }
+
+                    if(clickListener != null) {
+                        clickListener.onLongClick(child, position);
+                    }
                 }
             }
         });
