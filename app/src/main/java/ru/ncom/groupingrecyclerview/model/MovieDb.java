@@ -125,8 +125,11 @@ public class MovieDb implements Db<Movie>
      * @param n
      */
     public void cloneData(int n) {
-        for (int i=0; i<n; i++)
-            movieList.addAll(movieList);
+        for (int i=0; i<n; i++) {
+            int size = movieList.size();
+            for (int j = 0; j < size; j++)
+                movieList.add(movieList.get(j).clone());
+        }
     }
 
     @Override

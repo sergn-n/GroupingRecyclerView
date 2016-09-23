@@ -108,4 +108,9 @@ public class Movie extends TitledSelectableItem implements Serializable {
             return m.getYear().substring(0, 3) + "0s";
         }
     }
+
+    public Movie clone(){
+        //Titled is not clonable, no super()
+        return new Movie(getTitle(),genre, year);
+    }
 }
