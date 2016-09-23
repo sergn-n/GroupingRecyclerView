@@ -66,7 +66,8 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     public void reload(){
         load();
         if (mSortFieldName != null)
-            orderBy(mSortFieldName);
+            doOrder(mSortFieldName);
+        notifyDataSetChanged();
     }
 
     private boolean isDataClass(Titled tobj) {
