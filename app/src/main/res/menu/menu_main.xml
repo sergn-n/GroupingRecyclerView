@@ -1,0 +1,36 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity" >
+    <item android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
+
+    <!--
+        android:popupBackground="@android:color/holo_blue_light"
+    -->
+    <item
+        android:id="@+id/spinner"
+        app:actionViewClass="android.widget.Spinner"
+        android:orderInCategory="200"
+        android:title="Sort Spinner"
+        app:showAsAction="always" />
+
+    <!--
+        app:actionViewClass="android.widget.Button"
+    -->
+    <item
+        android:id="@+id/go_button"
+        android:orderInCategory="300"
+        android:title="Sort"
+        android:icon="@drawable/ic_go"
+        android:onClick="goButtonClicked"
+        app:showAsAction="always" />
+
+    <item android:id="@+id/more_movies"
+        android:title="More movies"
+        android:onClick="moreButtonClicked"
+        app:showAsAction="never" />
+
+</menu>

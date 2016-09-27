@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/GroupingRecyclerView.iml" filepath="$PROJECT_DIR$/GroupingRecyclerView.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/groupingadapter/groupingadapter.iml" filepath="$PROJECT_DIR$/groupingadapter/groupingadapter.iml" />
+    </modules>
+  </component>
+</project>
