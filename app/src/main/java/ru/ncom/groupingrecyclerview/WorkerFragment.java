@@ -9,8 +9,8 @@ import ru.ncom.groupingrecyclerview.adapter.MoviesAdapter;
 import ru.ncom.groupingrecyclerview.model.MovieDb;
 
 /**
- * Retained fragment is a tool to persist objects (MovieDb namely) over configuration change,
- * not for long running processes which must survive activity exit.
+ * Retained fragment is a tool to persist objects which are costly to recreate over configuration change.
+ * Not suitable for long running processes which must survive activity exit.
  */
 public class WorkerFragment extends Fragment {
     public static String TAG = "WORKERFRAGMENT";
@@ -24,7 +24,6 @@ public class WorkerFragment extends Fragment {
     public MoviesAdapter getMoviesAdapter() {
         return mMoviesAdapter;
     }
-
 
     private MainActivity currentMainActivity;
     public MainActivity getCurrentMainActivity() {
@@ -41,13 +40,9 @@ public class WorkerFragment extends Fragment {
         // Retain this instance so it isn't destroyed when MainActivity and
         // MainFragment change configuration.
         setRetainInstance(true);
-        Context appCtx = getActivity().getApplication().getApplicationContext();
+        Context appCtx = getActivity().getApplicationContext();
         // MovieDb needs context to get local file.
         mMovieDb = new MovieDb(appCtx);
-        // MoviesAdapter needs context just to show Toast.
-        mMoviesAdapter = new MoviesAdapter(mMovieDb, appCtx);
-
+        mMoviesAdapter = new MoviesAdapter(mMovieDb);
     }
-
-    //TODO convert it into dialog to show progress?
 }

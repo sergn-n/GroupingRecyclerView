@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -97,7 +98,8 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "mSortSpinner onItemSelected: pos=" + position );
+                Log.d(TAG, "mSortSpinner onItemSelected: (pos)="
+                        + ((AppCompatTextView)view).getText() + "("+position+")" );
                 Log.d(TAG, "mSortSpinner onItemSelected: adapterSort=" + mAdapter.getSortField() );
                 String sortField = (String)parent.getItemAtPosition(position);
                 setGoSortEnabled( (position != 0) && !sortField.equals(mAdapter.getSortField()));
@@ -115,7 +117,7 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        // * Set movie recycler but adapter
+        // * Set movie recycler but its adapter
         mGroupingRecyclerView = (GroupingRecyclerView) findViewById(R.id.recycler_view);
         mGroupingRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity
         mGroupingRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         // If a listener is also set for a TextView of the row in adapter / viewholder,
-        // first  Toast from SimpleRecyclerTouchListener appears, then from TextView
+        // first  Toast from this listener appears, then from TextView listener
         mGroupingRecyclerView.addOnItemTouchListener(new SimpleRecyclerTouchListener(getApplicationContext(), mGroupingRecyclerView
                 , new SimpleRecyclerTouchListener.ClickListener() {
             private final String TAG = "ClickListener(Main)";
@@ -132,15 +134,15 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view, int position) {
                 Log.d(TAG, "onClick: ");
-                // This titles may differ when adapter is not synchronized with db.
+                // This titles may differ when adapter is not synchronized with rv.
                 TitledViewHolder mvh = (TitledViewHolder) mGroupingRecyclerView.getChildViewHolder(view);
                 String viewTitle = (String)mvh.getTitleView().getText();
                 Titled movie = mAdapter.getAt(position);
-                String dbTitle = movie.getTitle();
+                String adapterTitle = movie.getTitle();
                 Toast.makeText(getApplicationContext()
-                        , (viewTitle.equals(dbTitle))
-                                ? dbTitle + " is selected!"
-                                : "They are different! \n" + dbTitle + "\n" + viewTitle
+                        , (viewTitle.equals(adapterTitle))
+                                ? adapterTitle + " is selected!"
+                                : "Adapter and view titles are different: \n" + adapterTitle + "\n" + viewTitle
                         , Toast.LENGTH_SHORT).show();
             }
 

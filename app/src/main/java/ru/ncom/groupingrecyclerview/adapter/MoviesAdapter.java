@@ -24,12 +24,9 @@ import ru.ncom.groupingrecyclerview.model.MovieDb;
 public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     private final String TAG = "MoviesAdapter";
-    private Context mContext;
 
-    public MoviesAdapter(MovieDb db, Context ctx) {
+    public MoviesAdapter(MovieDb db) {
         super(Movie.class, db);
-        mContext = ctx;
-        Log.d(TAG, "Constructor: #" + this.hashCode());
     }
 
     @Override
@@ -39,7 +36,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
             case DATAROW:
                 itemView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.movie_row, parent, false);
-                //itemView.setOnClickListener(mToastClickListener);
+                // My datarow ViewHolder sets listener on some childs
                 return new MovieViewHolder(itemView, mToastClickListener);
             default:
                 return createHeaderViewHolder(R.layout.header_row, R.id.title, parent);
@@ -48,11 +45,10 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-
-        Titled item = getAt(position);
-        // Default binding for Header
-        bindTitleView(holder, position);
+        // Default binding for title TextView
+        super.onBindViewHolder(holder, position);
         // My binding for Data
+        Titled item = getAt(position);
         if ((item instanceof Movie) && (holder instanceof MovieViewHolder)) {
             MovieViewHolder vh = (MovieViewHolder)holder;
             Movie m = (Movie)item;
@@ -61,35 +57,16 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
         }
     }
 
-    // Optional:
-
-    // **Ordering**
-
-    // * Default ordering (synchronous)  - nothing to do
-    /*
     @Override
-    public void orderBy(String sortField) {
-        Log.d(TAG, "orderBy: " + sortField);
-        super.orderBy(sortField);
+    public void setRecyclerView(RecyclerView rv)
+    {
+        Log.d(TAG, "setRecyclerView: rv=#"+rv.hashCode());
+        super.setRecyclerView(rv);
+        // A place to create custom listeners
+        mToastClickListener = new ToastOnClickListener(rv);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState){
-        Log.d(TAG, "onSaveInstanceState: ");
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState){
-        Log.d(TAG, "onRestoreInstanceState: ");
-        super.onRestoreInstanceState(savedInstanceState);
-    }
-    */
-
-    // * Test asynch ordering using protected doOrder()
-    //
-    //
-
+    // Simulate asynch operation: ordering using protected doOrder()
     /**
      * @param sortField
      * @param progressView
@@ -162,26 +139,15 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     }
 
-    // **Click listeners**
-    
-    //  Collapse / expand group with a click on header view is already implemented in super
-
-    // Demo Listener, is applied to childs of Data row
-
-    public void setRecyclerView(RecyclerView rv)
-    {
-        Log.d(TAG, "setRecyclerView: rv=#"+rv.hashCode());
-        super.setRecyclerView(rv);
-        mToastClickListener = new ToastOnClickListener(rv);
-    }
+    // Demo listener, is applied to childs of Data row
 
     private View.OnClickListener mToastClickListener;
 
-    public class ToastOnClickListener implements View.OnClickListener {
+    public static class ToastOnClickListener implements View.OnClickListener {
         private final String TAG = "ToastCL(Adpt)";
         private RecyclerView mRecyclerView;
 
-        public ToastOnClickListener(RecyclerView recycler)
+        private ToastOnClickListener(RecyclerView recycler)
         {
             mRecyclerView = recycler;
         }
@@ -192,11 +158,11 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
             Log.d(TAG, "onClick: view Class=" + view.getClass().getName());
             if (view instanceof RelativeLayout) {
                 int itemPosition = mRecyclerView.getChildLayoutPosition(view);
-                itemText = "**"+getAt(itemPosition).getTitle();
+                itemText = "**"+ ((MoviesAdapter)mRecyclerView.getAdapter()).getAt(itemPosition).getTitle();
             } else if (view instanceof TextView) {
                 itemText = ((TextView)view).getText().toString();
             }
-            Toast.makeText(mContext, itemText, Toast.LENGTH_LONG).show();
+            Toast.makeText(mRecyclerView.getContext(), itemText, Toast.LENGTH_LONG).show();
             // selection test
 
         }
