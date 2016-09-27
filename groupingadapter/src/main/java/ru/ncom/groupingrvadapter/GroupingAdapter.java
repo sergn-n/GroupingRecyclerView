@@ -106,7 +106,8 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
      * @param holder
      * @param position
      */
-    public void bindTitleView(RecyclerView.ViewHolder holder, int position) {
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         Titled item = itemsList.get(position);
         if (item instanceof Selectable)
             holder.itemView.setSelected(((Selectable)item).isSelected());
@@ -152,7 +153,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
             if ((h==null) || !newTitle.equals(h.getTitle())) {
                 h = new Header<>(newTitle);
                 itemsList.add(h);
-                if (mCollapsedHeaders != null //sort is fired by restoring after screen rotation
+                if (mCollapsedHeaders != null //sort is fired by restoring after configuration change
                         && mCollapsedHeaders.indexOf(newTitle) >= 0){
                     h.setCollapsed(true);
                 }
@@ -161,11 +162,11 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
                 itemsList.add(m);
             h.getChildItemList().add(m);
         }
-        //  Clear restored collapsed headers till next screen rotation
+        //  Clear restored collapsed headers till next configuration change
         mCollapsedHeaders = null;
     }
 
-    // Call that methods from Activity when non-retaining adapter is used
+    // Call those methods from Activity when non-retaining adapter is used
 
     public void onSaveInstanceState(Bundle outState){
         outState.putString(SORTFIELDNAME,mSortFieldName);
@@ -182,6 +183,53 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     //  **Collapse / expand group by clicking on header.**
 
+    private int expandHeader(Header<T> h, int headerPosition) {
+        int count = 0;
+        List<T> childItemList = h.getChildItemList();
+        if (childItemList != null) {
+            count = childItemList.size();
+            for (int i = 0; i < count; i++) {
+                itemsList.add(headerPosition + i + 1, childItemList.get(i));
+            }
+        }
+        h.setCollapsed(false);
+        return count;
+    }
+
+    private int collapseHeader(Header<T> h, int headerPosition) {
+        int count = 0;
+        List<T> childItemList = h.getChildItemList();
+        if (childItemList != null) {
+            count = childItemList.size();
+            for (int i = count - 1; i >= 0; i--) {
+                itemsList.remove(headerPosition + i + 1);
+            }
+        }
+        h.setCollapsed(true);
+        return count;
+    }
+
+    private void toggleCollapseExpand(int headerPosition) {
+        Titled itm = itemsList.get(headerPosition);
+        if (!isDataClass(itm)) {
+            // clear restored state
+            mCollapsedHeaders = null;
+            // toggle collapse
+            Header<T> h = (Header<T>) itm;
+            int childListItemCount;
+            if (h.isCollapsed()) {
+                childListItemCount = expandHeader(h, headerPosition);
+                if (childListItemCount > 0)
+                    notifyItemRangeInserted(headerPosition + 1, childListItemCount);
+            } else {
+                childListItemCount = collapseHeader(h, headerPosition);
+                if (childListItemCount > 0)
+                    notifyItemRangeRemoved(headerPosition + 1, childListItemCount);
+            }
+        }
+    }
+
+
     private View.OnClickListener mCollapseExpandCL;
 
     /**
@@ -190,9 +238,9 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
      * to get the position of the view clicked.
      * @param rv
      */
-     protected void setRecyclerView(RecyclerView rv){
-         mCollapseExpandCL = new CollapseExpandClickListener(rv);
-     }
+    protected void setRecyclerView(RecyclerView rv){
+     mCollapseExpandCL = new CollapseExpandClickListener(rv);
+    }
 
     private class CollapseExpandClickListener implements View.OnClickListener {
         private final RecyclerView mRecyclerView;
@@ -204,37 +252,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         @Override
         public void onClick(final View view) {
             int headerPosition = mRecyclerView.getChildLayoutPosition(view);
-            Titled itm = itemsList.get(headerPosition);
-            if (!isDataClass(itm)) {
-                //  clear restored state
-                mCollapsedHeaders = null;
-
-                Header<T> h = (Header<T>)itm;
-                if (h.isCollapsed() ) {
-                    // expand
-                    List<T> childItemList = h.getChildItemList();
-                    if (childItemList != null) {
-                        int childListItemCount = childItemList.size();
-                        for (int i = 0; i < childListItemCount; i++) {
-                            itemsList.add(headerPosition + i + 1, childItemList.get(i));
-                        }
-                        h.setCollapsed(false);
-                        notifyItemRangeInserted(headerPosition + 1, childListItemCount);
-                    }
-                }
-                else{
-                    // collapse
-                    List<T> childItemList = h.getChildItemList();
-                    if (childItemList != null) {
-                        int childListItemCount = childItemList.size();
-                        for (int i = childListItemCount - 1; i >= 0; i--) {
-                            itemsList.remove(headerPosition + i + 1);
-                        }
-                        h.setCollapsed(true);
-                        notifyItemRangeRemoved(headerPosition + 1, childListItemCount);
-                    }
-                }
-            }
+            toggleCollapseExpand(headerPosition);
         }
     }
 }
