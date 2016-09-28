@@ -1,7 +1,8 @@
 package ru.ncom.groupingrecyclerview.adapter;
 
-import android.content.Context;
+
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import ru.ncom.groupingrvadapter.GroupingAdapter;
+import ru.ncom.groupingrvadapter.Header;
+import ru.ncom.groupingrvadapter.HeaderViewHolder;
+import ru.ncom.groupingrvadapter.Selectable;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrecyclerview.R;
 
@@ -39,22 +43,41 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
                 // My datarow ViewHolder sets listener on some childs
                 return new MovieViewHolder(itemView, mToastClickListener);
             default:
-                return createHeaderViewHolder(R.layout.header_row, R.id.title, parent);
+                itemView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.header_row, parent, false);
+                return new MovieHeaderViewHolder(itemView, R.id.title);
+            //return createHeaderViewHolder(R.layout.header_row, R.id.title, parent);
         }
     }
 
+
+    private static final float INITIAL_POSITION = 0.0f;
+    private static final float ROTATED_POSITION = 90f;
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         // Default binding for title TextView
         super.onBindViewHolder(holder, position);
         // My binding for Data
         Titled item = getAt(position);
-        if ((item instanceof Movie) && (holder instanceof MovieViewHolder)) {
-            MovieViewHolder vh = (MovieViewHolder)holder;
-            Movie m = (Movie)item;
-            vh.genre.setText(m.getGenre());
-            vh.year.setText(m.getYear());
+        switch (holder.getItemViewType()){
+            case DATAROW :
+                MovieViewHolder vh = (MovieViewHolder)holder;
+                Movie m = (Movie)item;
+                vh.genre.setText(m.getGenre());
+                vh.year.setText(m.getYear());
+                break;
+            default: // HEADERROW
+                MovieHeaderViewHolder vhh = (MovieHeaderViewHolder)holder;
+                Header itm = (Header)item;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    if (itm.isCollapsed()) {
+                        vhh.expandedIcon.setRotation(ROTATED_POSITION);
+                    } else {
+                        vhh.expandedIcon.setRotation(INITIAL_POSITION);
+                    }
+                }
         }
+
     }
 
     @Override

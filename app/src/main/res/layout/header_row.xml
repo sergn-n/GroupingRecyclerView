@@ -21,4 +21,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <ImageView android:id="@+id/arrow_expand_imageview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_keyboard_arrow_down_black_24dp"
+        android:layout_alignEnd="@+id/title"
+        android:layout_alignRight="@+id/title"
+        android:foregroundGravity="right" />
+
 </RelativeLayout>
