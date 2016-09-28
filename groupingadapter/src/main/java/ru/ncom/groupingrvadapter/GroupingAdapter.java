@@ -85,7 +85,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     }
 
     /**
-     * Inflates specified header layout and sets it's expand/collapse ClickListener.
+     * Inflates specified header layout
      * Creates default ViewHolder to hold specified title TextView of the layout.
      * Alternatively you can create your own holder which must implement {@link TitledViewHolder}
      * @param headerLayoutId id of the header layout.
@@ -96,19 +96,20 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     public RecyclerView.ViewHolder createHeaderViewHolder(int headerLayoutId, int titleTextViewId, ViewGroup parent) {
         View itemView = LayoutInflater.from(parent.getContext())
                     .inflate(headerLayoutId, parent, false);
-            itemView.setOnClickListener(mCollapseExpandCL);
             return new HeaderViewHolder(itemView, titleTextViewId);
     }
 
     /**
      * Sets text value of the title TextView, see {@link TitledViewHolder#getTitleView()}. Sets itemView selection. If current view is a header
-     * adds also a number of items under the header.
+     * adds also a number of items under the header. For a header also sets it's expand/collapse ClickListener.
      * @param holder
      * @param position
      */
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         Titled item = itemsList.get(position);
+        if (holder.getItemViewType() == HEADERROW )
+            holder.itemView.setOnClickListener(mCollapseExpandCL);
         if (item instanceof Selectable)
             holder.itemView.setSelected(((Selectable)item).isSelected());
         TextView v = ((TitledViewHolder)holder).getTitleView();
@@ -226,11 +227,14 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
                 if (childListItemCount > 0)
                     notifyItemRangeRemoved(headerPosition + 1, childListItemCount);
             }
+            // isSelected() changed anyway
+            notifyItemChanged(headerPosition);
         }
     }
 
 
     private View.OnClickListener mCollapseExpandCL;
+
 
     /**
      * Creates {@link CollapseExpandClickListener} to be used in {@link #createHeaderViewHolder(int, int, ViewGroup)}.
@@ -239,7 +243,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
      * @param rv
      */
     protected void setRecyclerView(RecyclerView rv){
-     mCollapseExpandCL = new CollapseExpandClickListener(rv);
+        mCollapseExpandCL = new CollapseExpandClickListener(rv);
     }
 
     private class CollapseExpandClickListener implements View.OnClickListener {
