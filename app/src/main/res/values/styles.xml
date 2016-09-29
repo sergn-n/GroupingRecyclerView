@@ -7,7 +7,12 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
-         <!-- <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItemStyle</item>-->
+        <item name="android:spinnerStyle">@style/SpinnerStyle</item>
+        <item name="android:spinnerItemStyle">@style/SpinnerItemStyle</item>
+        <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItemStyle</item>
+        <!-- Other AS spinner-related suggestions:
+         <item name="android:dropDownSpinnerStyle"></item>
+       -->
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -17,15 +22,26 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
-    <!-- spinner styling
-    <item name="android:textColor">@color/colorAccent</item>
-     -->
+    <!-- AB spinner styling
 
-    <style name="SpinnerDropDownItemStyle" parent="@android:style/Widget.ActionBar.TabText">
-        <item name="android:textAppearance">@style/SpinnerDropDownItemTextStyle</item>
+     -->
+    <style name="SpinnerStyle" parent="@style/Widget.AppCompat.Spinner.DropDown.ActionBar">
+        <item name="android:dropDownVerticalOffset">40dp</item>
     </style>
 
-    <style name="SpinnerDropDownItemTextStyle" parent="@android:style/Widget">
+    <style name="SpinnerItemStyle" parent="@android:style/Widget.ActionBar.TabText">
+        <item name="android:textAppearance">@style/SpinnerItemTextStyle</item>
+    </style>
 
+    <style name="SpinnerDropDownItemStyle" parent="SpinnerItemStyle">
+        <item name="android:background">@drawable/spinner_selector</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+
+        <!--item name="android:layout_marginLeft">5dp</item NO EFFECT-->
+    </style>
+
+    <style name="SpinnerItemTextStyle" parent="@android:style/Widget">
+        <item name="android:textColor">@android:color/background_light</item>
     </style>
 </resources>

@@ -236,9 +236,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // Needn't it any more, persistent adapter version
+        // Needn't it in the retaining adapter version
         //mAdapter.onSaveInstanceState(outState);
-        outState.putInt(SORTSPINNERPOS, mSortSpinner.getSelectedItemPosition());
+        outState.putInt(SORTSPINNERPOS, mSortSpinnerSavedPos);
         outState.putBoolean(ISSORTFINISHED, mIsSortFinished);
 
     }
@@ -246,11 +246,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        // Needn't it any more, persistent adapter version
+        // Needn't it in the retaining adapter version
         //mAdapter.onRestoreInstanceState(savedInstanceState);
         mSortSpinnerSavedPos = savedInstanceState.getInt(SORTSPINNERPOS);
         mIsSortFinished = savedInstanceState.getBoolean(ISSORTFINISHED);
-        Log.d(TAG, "onRestoreInstanceState: mIsSortFinished ="+ mIsSortFinished);
     }
 
     // ProgressListener members
