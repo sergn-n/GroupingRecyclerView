@@ -28,8 +28,6 @@ import ru.ncom.groupingrecyclerview.model.MovieDb;
 public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     private final String TAG = "MoviesAdapter";
-    private static final float INITIAL_POSITION = 0.0f;
-    private static final float ROTATED_POSITION = -90f;
 
     public MoviesAdapter(MovieDb db) {
         super(Movie.class, db);
@@ -67,14 +65,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
                 break;
             default: // HEADERROW
                 MovieHeaderViewHolder vhh = (MovieHeaderViewHolder)holder;
-                Header itm = (Header)item;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    if (itm.isCollapsed()) {
-                        vhh.expandedIcon.setRotation(ROTATED_POSITION);
-                    } else {
-                        vhh.expandedIcon.setRotation(INITIAL_POSITION);
-                }
-            }
+                vhh.bind((Header)item);
         }
     }
 
