@@ -104,10 +104,10 @@ public class MainActivity extends AppCompatActivity
                 String sortField = (String)parent.getItemAtPosition(position);
                 setGoSortEnabled( (position != 0) && !sortField.equals(mAdapter.getSortField()));
 
-                if (mSortSpinnerSavedPos >=0 && mSortSpinnerSavedPos != position) {
-                    //TODO Is there a simpler way to apply action bar theme instead of spinner color?
-                    invalidateOptionsMenu();
-                }
+//                if (mSortSpinnerSavedPos >=0 && mSortSpinnerSavedPos != position) {
+//                    //TODO Is there a simpler way to apply action bar theme instead of spinner color?
+//                    invalidateOptionsMenu();
+//                }
                 mSortSpinnerSavedPos = position;
             }
 

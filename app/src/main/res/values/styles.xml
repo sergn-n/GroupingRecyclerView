@@ -23,10 +23,13 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
     <!-- AB spinner styling
+        <item name="android:dropDownVerticalOffset">?actionBarSize</item>
 
      -->
     <style name="SpinnerStyle" parent="@style/Widget.AppCompat.Spinner.DropDown.ActionBar">
-        <item name="android:dropDownVerticalOffset">40dp</item>
+        <!-- Not needed on API17 (MS SVS emulator). Dropdown is below the value.
+            <item name="android:dropDownVerticalOffset">?actionBarSize</item>
+         -->
     </style>
 
     <style name="SpinnerItemStyle" parent="@android:style/Widget.ActionBar.TabText">
