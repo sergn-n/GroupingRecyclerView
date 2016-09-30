@@ -25,7 +25,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import ru.ncom.groupingrvadapter.GroupingRecyclerView;
+
 import ru.ncom.groupingrvadapter.SimpleRecyclerTouchListener;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
@@ -34,14 +34,14 @@ import ru.ncom.groupingrecyclerview.adapter.MoviesAdapter;
 import ru.ncom.groupingrecyclerview.model.Movie;
 import ru.ncom.groupingrecyclerview.model.MovieDb;
 
-// GroupingRecyclerView demo activity : Movies
+// Grouping RecyclerView demo activity : Movies
 public class MainActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
 
     private final String TAG = "Main";
 
     private MovieDb mMovieDb;
-    private GroupingRecyclerView mGroupingRecyclerView;
+    private RecyclerView mGroupingRecyclerView;
     private MoviesAdapter mAdapter;
 
     private Spinner mSortSpinner;
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity
         };
 
         // * Set movie recycler but its adapter
-        mGroupingRecyclerView = (GroupingRecyclerView) findViewById(R.id.recycler_view);
+        mGroupingRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mGroupingRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         mGroupingRecyclerView.setLayoutManager(mLayoutManager);

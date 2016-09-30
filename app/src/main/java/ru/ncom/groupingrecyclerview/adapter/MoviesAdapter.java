@@ -28,6 +28,8 @@ import ru.ncom.groupingrecyclerview.model.MovieDb;
 public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     private final String TAG = "MoviesAdapter";
+    private static final float INITIAL_POSITION = 0.0f;
+    private static final float ROTATED_POSITION = -90f;
 
     public MoviesAdapter(MovieDb db) {
         super(Movie.class, db);
@@ -50,9 +52,6 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
         }
     }
 
-
-    private static final float INITIAL_POSITION = 0.0f;
-    private static final float ROTATED_POSITION = 90f;
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         // Default binding for title TextView
@@ -74,17 +73,16 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
                         vhh.expandedIcon.setRotation(ROTATED_POSITION);
                     } else {
                         vhh.expandedIcon.setRotation(INITIAL_POSITION);
-                    }
                 }
+            }
         }
-
     }
 
     @Override
-    public void setRecyclerView(RecyclerView rv)
+    public void onAttachedToRecyclerView (RecyclerView rv)
     {
-        Log.d(TAG, "setRecyclerView: rv=#"+rv.hashCode());
-        super.setRecyclerView(rv);
+        Log.d(TAG, "RecyclerView #"+rv.hashCode());
+        super.onAttachedToRecyclerView(rv);
         // A place to create custom listeners
         mToastClickListener = new ToastOnClickListener(rv);
     }

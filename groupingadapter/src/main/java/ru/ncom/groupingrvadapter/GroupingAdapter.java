@@ -237,13 +237,15 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
 
     /**
-     * Creates {@link CollapseExpandClickListener} to be used in {@link #createHeaderViewHolder(int, int, ViewGroup)}.
+     * + creates {@link CollapseExpandClickListener} to be used in {@link #createHeaderViewHolder(int, int, ViewGroup)}.
      * The listener uses {@link RecyclerView#getChildLayoutPosition(View)}
      * to get the position of the view clicked.
-     * @param rv
+     * @param recyclerView
      */
-    protected void setRecyclerView(RecyclerView rv){
-        mCollapseExpandCL = new CollapseExpandClickListener(rv);
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mCollapseExpandCL = new CollapseExpandClickListener(recyclerView);
     }
 
     private class CollapseExpandClickListener implements View.OnClickListener {
