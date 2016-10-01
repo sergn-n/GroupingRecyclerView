@@ -6,7 +6,12 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-
+        <!-- To change the popup menu and app text color
+        <item name="android:textColor">@android:color/background_light</item>
+        -->
+        <!-- To change the background of options menu
+        <item name="android:itemBackground">@color/skyBlue</item>
+        -->
         <item name="android:spinnerStyle">@style/SpinnerStyle</item>
         <item name="android:spinnerItemStyle">@style/SpinnerItemStyle</item>
         <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItemStyle</item>
@@ -23,7 +28,6 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
     <!-- AB spinner styling
-        <item name="android:dropDownVerticalOffset">?actionBarSize</item>
 
      -->
     <style name="SpinnerStyle" parent="@style/Widget.AppCompat.Spinner.DropDown.ActionBar">
@@ -32,19 +36,18 @@
          -->
     </style>
 
-    <style name="SpinnerItemStyle" parent="@android:style/Widget.ActionBar.TabText">
+    <style name="SpinnerItemStyle" >
         <item name="android:textAppearance">@style/SpinnerItemTextStyle</item>
     </style>
 
     <style name="SpinnerDropDownItemStyle" parent="SpinnerItemStyle">
-        <item name="android:background">@drawable/spinner_selector</item>
+        <item name="android:background">@drawable/spinner_background_selector</item>
         <item name="android:paddingLeft">10dp</item>
         <item name="android:paddingRight">10dp</item>
-
-        <!--item name="android:layout_marginLeft">5dp</item NO EFFECT-->
     </style>
 
     <style name="SpinnerItemTextStyle" parent="@android:style/Widget">
-        <item name="android:textColor">@android:color/background_light</item>
+        <item name="android:textColor">@drawable/spinner_text_selector</item>
+        <item name="android:textSize">18sp</item>
     </style>
 </resources>
