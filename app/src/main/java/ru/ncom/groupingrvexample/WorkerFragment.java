@@ -1,12 +1,12 @@
-package ru.ncom.groupingrecyclerview;
+package ru.ncom.groupingrvexample;
 
 
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
-import ru.ncom.groupingrecyclerview.adapter.MoviesAdapter;
-import ru.ncom.groupingrecyclerview.model.MovieDb;
+import ru.ncom.groupingrvexample.adapter.MoviesAdapter;
+import ru.ncom.groupingrvexample.model.MovieDb;
 
 /**
  * Retained fragment is a tool to persist objects which are costly to recreate over configuration change.
@@ -25,19 +25,19 @@ public class WorkerFragment extends Fragment {
         return mMoviesAdapter;
     }
 
-    private MainActivity currentMainActivity;
-    public MainActivity getCurrentMainActivity() {
-        return currentMainActivity;
+    private BaseActivity currentBaseActivity;
+    public BaseActivity getCurrentBaseActivity() {
+        return currentBaseActivity;
     }
-    public void setCurrentMainActivity(MainActivity currentMainActivity) {
-        this.currentMainActivity = currentMainActivity;
+    public void setCurrentBaseActivity(BaseActivity currentBaseActivity) {
+        this.currentBaseActivity = currentBaseActivity;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Retain this instance so it isn't destroyed when MainActivity and
+        // Retain this instance so it isn't destroyed when BaseActivity and
         // MainFragment change configuration.
         setRetainInstance(true);
         Context appCtx = getActivity().getApplicationContext();

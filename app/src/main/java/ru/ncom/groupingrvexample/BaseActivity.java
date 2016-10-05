@@ -1,4 +1,4 @@
-package ru.ncom.groupingrecyclerview;
+package ru.ncom.groupingrvexample;
 // Reworked http://www.androidhive.info/2016/01/android-working-with-recycler-view/
 
 import android.graphics.Color;
@@ -30,15 +30,15 @@ import ru.ncom.groupingrvadapter.SimpleRecyclerTouchListener;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
 
-import ru.ncom.groupingrecyclerview.adapter.MoviesAdapter;
-import ru.ncom.groupingrecyclerview.model.Movie;
-import ru.ncom.groupingrecyclerview.model.MovieDb;
+import ru.ncom.groupingrvexample.adapter.MoviesAdapter;
+import ru.ncom.groupingrvexample.model.Movie;
+import ru.ncom.groupingrvexample.model.MovieDb;
 
 // Grouping RecyclerView demo activity : Movies
-public class MainActivity extends AppCompatActivity
+public class BaseActivity extends AppCompatActivity
                        implements MoviesAdapter.AsyncDbSort.ProgressListener {
 
-    private final String TAG = "Main";
+    private final String TAG = "Base";
 
     private MovieDb mMovieDb;
     private RecyclerView mGroupingRecyclerView;
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity
             mWorker = new WorkerFragment();
             fm.beginTransaction().add(mWorker, WorkerFragment.TAG).commit();
         }
-        mWorker.setCurrentMainActivity(this);
+        mWorker.setCurrentBaseActivity(this);
 
         // * for mSortSpinner
         // ** adapter
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity
                 mAdapter.orderBy(sortField);
             } else {
                 // Use async sort for TITLE
-                mAdapter.orderByAsync(sortField, MainActivity.this);
+                mAdapter.orderByAsync(sortField, BaseActivity.this);
             }
         }
     }
@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public MoviesAdapter.AsyncDbSort.ProgressListener getCurrentInstance() {
         // mWorker should know it see onCreate()
-        return mWorker.getCurrentMainActivity();
+        return mWorker.getCurrentBaseActivity();
     }
 
     @Override

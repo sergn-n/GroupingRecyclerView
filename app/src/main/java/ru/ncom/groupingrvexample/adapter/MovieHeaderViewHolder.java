@@ -1,4 +1,4 @@
-package ru.ncom.groupingrecyclerview.adapter;
+package ru.ncom.groupingrvexample.adapter;
 
 import android.os.Build;
 import android.view.View;
@@ -6,7 +6,7 @@ import android.widget.ImageView;
 
 import ru.ncom.groupingrvadapter.Header;
 import ru.ncom.groupingrvadapter.HeaderViewHolder;
-import ru.ncom.groupingrecyclerview.R;
+import ru.ncom.groupingrvexample.R;
 
 /**
  * Created by gerg on 28.09.2016.

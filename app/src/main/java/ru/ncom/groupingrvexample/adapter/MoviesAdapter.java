@@ -1,8 +1,7 @@
-package ru.ncom.groupingrecyclerview.adapter;
+package ru.ncom.groupingrvexample.adapter;
 
 
 import android.os.AsyncTask;
-import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,13 +13,11 @@ import android.widget.Toast;
 
 import ru.ncom.groupingrvadapter.GroupingAdapter;
 import ru.ncom.groupingrvadapter.Header;
-import ru.ncom.groupingrvadapter.HeaderViewHolder;
-import ru.ncom.groupingrvadapter.Selectable;
 import ru.ncom.groupingrvadapter.Titled;
-import ru.ncom.groupingrecyclerview.R;
+import ru.ncom.groupingrvexample.R;
 
-import ru.ncom.groupingrecyclerview.model.Movie;
-import ru.ncom.groupingrecyclerview.model.MovieDb;
+import ru.ncom.groupingrvexample.model.Movie;
+import ru.ncom.groupingrvexample.model.MovieDb;
 
 /**
  * Example of grouping adapter for Movie class

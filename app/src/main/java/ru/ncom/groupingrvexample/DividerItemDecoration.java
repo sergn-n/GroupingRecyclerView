@@ -1,4 +1,4 @@
-package ru.ncom.groupingrecyclerview;
+package ru.ncom.groupingrvexample;
 
 import android.content.Context;
 import android.content.res.TypedArray;

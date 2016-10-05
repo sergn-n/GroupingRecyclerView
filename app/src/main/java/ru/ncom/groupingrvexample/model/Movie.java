@@ -1,4 +1,4 @@
-package ru.ncom.groupingrecyclerview.model;
+package ru.ncom.groupingrvexample.model;
 
 import java.io.Serializable;
 import java.security.InvalidParameterException;
