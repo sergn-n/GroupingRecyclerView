@@ -27,7 +27,9 @@ public class MovieDb implements Db<Movie>
     private static String TAG ="MovieDb";
 
     private Context mContext;
-    // Data
+    // Sorted (if requested)
+    private ArrayList<Movie> sortedMovieList = null;
+    // Original data
     private ArrayList<Movie> movieList;
 
     public MovieDb(Context ctx) {
@@ -123,21 +125,32 @@ public class MovieDb implements Db<Movie>
      * Repeat current list 2**n times (n>0)
      * @param n
      */
-    public void cloneData(int n) {
+    public void cloneData(int n) throws IOException {
         for (int i=0; i<n; i++) {
             int size = movieList.size();
             for (int j = 0; j < size; j++)
                 movieList.add(movieList.get(j).clone());
         }
+        if (n>0) {
+            save();
+            sortedMovieList = null;
+        }
     }
 
     @Override
-    public List<Movie> getDataList() { return movieList;}
+    public List<Movie> getDataList() {
+        if (sortedMovieList == null) {
+            sortedMovieList = new ArrayList<>(movieList.size());
+            for (int i = 0; i < movieList.size(); i++)
+                sortedMovieList.add(movieList.get(i));
+        }
+        return sortedMovieList;
+    }
 
     @Override
     public List<Movie> orderBy(Comparator<Movie> mcb) {
-        Collections.sort(movieList,mcb);
-        return movieList;
+        Collections.sort(getDataList(),mcb);
+        return sortedMovieList;
     }
 
     @Override

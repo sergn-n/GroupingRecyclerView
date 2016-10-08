@@ -23,6 +23,7 @@ import android.widget.Spinner;
 
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -188,6 +189,7 @@ public class BaseActivity extends AppCompatActivity
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ");
+        /* Db saves itself when cloning
         // Save data at screen rotation. Data will be restored in OnCreate().
         try {
             mMovieDb.save();
@@ -195,9 +197,10 @@ public class BaseActivity extends AppCompatActivity
         catch (Exception e){
             Log.e(TAG, "onStop: save() failed ",e);
         }
+        */
     }
 
-    public void moreButtonClicked(MenuItem itm) {
+    public void moreButtonClicked(MenuItem itm) throws IOException {
         mMovieDb.cloneData(1);
         mAdapter.reload();
     }
