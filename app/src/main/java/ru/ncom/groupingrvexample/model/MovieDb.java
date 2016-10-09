@@ -157,4 +157,34 @@ public class MovieDb implements Db<Movie>
     public ComparatorGrouper<Movie> getComparatorGrouper(String orderByFieldName) {
         return Movie.getComparatorGrouper(orderByFieldName);
     }
+
+    // #region Data Modification
+
+    public void Insert (Movie m, int sortedPos){
+        movieList.add(m);
+        sortedMovieList.add(sortedPos,m);
+    }
+
+    public boolean Delete(Movie m) throws IOException{
+        if (movieList.remove(m)){
+            save();
+            if (sortedMovieList != null)
+                sortedMovieList.remove(m);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean Delete(int sortedPos) throws IOException{
+        if (sortedMovieList != null) {
+            Movie m = sortedMovieList.get(sortedPos);
+            if (movieList.remove(m)){
+                save();
+                sortedMovieList.remove(sortedPos);
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

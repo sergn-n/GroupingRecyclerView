@@ -128,8 +128,8 @@ public class BaseActivity extends AppCompatActivity
 
         // If a listener is also set for a TextView of the row in adapter / viewholder,
         // first  Toast from this listener appears, then from TextView listener
-        mGroupingRecyclerView.addOnItemTouchListener(new SimpleRecyclerTouchListener(getApplicationContext(), mGroupingRecyclerView
-                , new SimpleRecyclerTouchListener.ClickListener() {
+        mGroupingRecyclerView.addOnItemTouchListener(new OnMovieTouchListener(getApplicationContext(), mGroupingRecyclerView
+                , new OnMovieTouchListener.ClickListener() {
             private final String TAG = "ClickListener(Main)";
 
             @Override
@@ -150,6 +150,18 @@ public class BaseActivity extends AppCompatActivity
             @Override
             public void onLongClick(View view, int position) {
                 Log.d(TAG, "onLongClick: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+            }
+
+            @Override
+            public void onZoomIn(View view, int position) {
+                Log.d(TAG, "onZoomIn: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+
+            }
+
+            @Override
+            public void onZoomOut(View view, int position) {
+                Log.d(TAG, "onZoomOut: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+
             }
         }));
     }
@@ -201,6 +213,7 @@ public class BaseActivity extends AppCompatActivity
     }
 
     public void moreButtonClicked(MenuItem itm) throws IOException {
+        // Direct db update requires total adapter reload.
         mMovieDb.cloneData(1);
         mAdapter.reload();
     }
