@@ -15,7 +15,7 @@ import java.util.List;
  * Created by Serg on 11.09.2016.
  */
 public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder>
-            implements TitledGetterAtPosition {
+            implements GetterAtPosition {
 
     /**
      * Row type: row of data of T type

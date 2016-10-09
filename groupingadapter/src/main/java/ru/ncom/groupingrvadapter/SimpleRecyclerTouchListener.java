@@ -38,8 +38,8 @@ public class SimpleRecyclerTouchListener implements RecyclerView.OnItemTouchList
                     int position = recyclerView.getChildLayoutPosition(child);
                     child.setSelected(newState);
                     // is it a proper adapter?
-                    if (recyclerView.getAdapter() instanceof TitledGetterAtPosition) {
-                        Titled item = ((TitledGetterAtPosition)recyclerView.getAdapter()).getAt(position);
+                    if (recyclerView.getAdapter() instanceof GetterAtPosition) {
+                        Object item = ((GetterAtPosition)recyclerView.getAdapter()).getAt(position);
                         if (item instanceof Selectable)
                             ((Selectable)item).setSelected(newState);
                     }
