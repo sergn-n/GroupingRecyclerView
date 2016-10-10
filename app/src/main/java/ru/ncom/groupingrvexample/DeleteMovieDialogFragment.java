@@ -74,7 +74,9 @@ public class DeleteMovieDialogFragment extends DialogFragment {
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        ((YesNoListener) getActivity()).onDismiss();
+        // No actvity when config change
+        if (getActivity()!= null)
+            ((YesNoListener) getActivity()).onDismiss();
     }
 }
 

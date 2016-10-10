@@ -175,19 +175,19 @@ public class BaseActivity extends AppCompatActivity
 
     @Override
     public void onNo() {
-        mDeleteDialog.dismiss();
+
     }
 
     @Override
     public void onYes(int position) {
         Log.d(TAG, "!! Gonna delete position =" + position);
-        mAdapter.delete(position);
-        mDeleteDialog.dismiss();
+        //mAdapter.delete(position);
     }
 
     @Override
     public void onDismiss() {
-        Log.d(TAG, "Delete Dialog was dismissed");
+        // dismissed  by CANCEL/ OK / click outside the dialog
+        Log.d(TAG, "Delete Dialog was dismissed by user action on it.");
         mDeleteDialog = null;
     }
 
