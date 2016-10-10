@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Grouping Recycler View</string>
     <string name="action_settings">Settings</string>
+
+    <string name="delete_movie_dialog_title">Delete this movie</string>
+    <string name="delete_movie_dialog_message">Sure?</string>
 </resources>

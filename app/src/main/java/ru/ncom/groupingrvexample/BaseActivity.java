@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.List;
 
 
-import ru.ncom.groupingrvadapter.SimpleRecyclerTouchListener;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
 
@@ -37,7 +36,8 @@ import ru.ncom.groupingrvexample.model.MovieDb;
 
 // Grouping RecyclerView demo activity : Movies
 public class BaseActivity extends AppCompatActivity
-                       implements MoviesAdapter.AsyncDbSort.ProgressListener {
+                       implements MoviesAdapter.AsyncDbSort.ProgressListener,
+        DeleteMovieDialogFragment.YesNoListener {
 
     private final String TAG = "Base";
 
@@ -54,6 +54,8 @@ public class BaseActivity extends AppCompatActivity
     private MenuItem mGoSort;
     private final String ISSORTFINISHED = "ISSORTFINISHED";
     private boolean mIsSortFinished = true;
+    private DeleteMovieDialogFragment mDeleteDialog;
+
 
     // Holds db across activity lifecycle
     //TODO use it to hold the state of controls and tasks instead of bundle?
@@ -161,9 +163,32 @@ public class BaseActivity extends AppCompatActivity
             @Override
             public void onZoomOut(View view, int position) {
                 Log.d(TAG, "onZoomOut: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+                if (mDeleteDialog == null) {
+                    mDeleteDialog = DeleteMovieDialogFragment.createInstance(
+                            getString(R.string.delete_movie_dialog_message), position);
 
+                    mDeleteDialog.show(getSupportFragmentManager(), "tagDeleteMovie"); // or getFragmentManager()                    mDeleteDialog = new AlertDialog.Builder(BaseActivity.this);
+                }
             }
         }));
+    }
+
+    @Override
+    public void onNo() {
+        mDeleteDialog.dismiss();
+    }
+
+    @Override
+    public void onYes(int position) {
+        Log.d(TAG, "!! Gonna delete position =" + position);
+        mAdapter.delete(position);
+        mDeleteDialog.dismiss();
+    }
+
+    @Override
+    public void onDismiss() {
+        Log.d(TAG, "Delete Dialog was dismissed");
+        mDeleteDialog = null;
     }
 
     @Override
