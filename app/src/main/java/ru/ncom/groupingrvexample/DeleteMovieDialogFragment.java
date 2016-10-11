@@ -14,16 +14,22 @@ import android.support.v7.app.AlertDialog;
 public class DeleteMovieDialogFragment extends DialogFragment {
 
     public interface YesNoListener {
-        void onYes(int position);
+        void onDeleteYes(int position);
 
-        void onNo();
+        void onDeleteNo();
 
-        void onDismiss();
+        void onDeleteDismiss();
     }
 
     private static final String MSG ="MSG";
     private static final String POS ="POS";
 
+    /**
+     * Creates AlertDoalog to confirm deletion. Activity must implement {@link YesNoListener}
+     * @param message message in AlertDialog
+     * @param position when deletion is confirmed  {@link YesNoListener#onDeleteYes(int position)} is fired.
+     * @return
+     */
     public static DeleteMovieDialogFragment createInstance(String message, int position){
         DeleteMovieDialogFragment f = new DeleteMovieDialogFragment();
         Bundle b = new Bundle();
@@ -58,14 +64,14 @@ public class DeleteMovieDialogFragment extends DialogFragment {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ((YesNoListener) getActivity()).onYes(position);
+                        ((YesNoListener) getActivity()).onDeleteYes(position);
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ((YesNoListener) getActivity()).onNo();
+                        ((YesNoListener) getActivity()).onDeleteNo();
                     }
                 })
                 .create();
@@ -76,12 +82,6 @@ public class DeleteMovieDialogFragment extends DialogFragment {
         super.onDismiss(dialog);
         // No actvity when config change
         if (getActivity()!= null)
-            ((YesNoListener) getActivity()).onDismiss();
+            ((YesNoListener) getActivity()).onDeleteDismiss();
     }
 }
-
-/*
-And in the Activity you call:
-
-DeleteMovieDialogFragment().show(getSupportFragmentManager(), "tag"); // or getFragmentManager()
-*/

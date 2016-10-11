@@ -38,8 +38,8 @@ import ru.ncom.groupingrvexample.model.MovieDb;
 
 // Grouping RecyclerView demo activity : Movies
 public class BaseActivity extends AppCompatActivity
-                       implements MoviesAdapter.AsyncDbSort.ProgressListener,
-        DeleteMovieDialogFragment.YesNoListener {
+        implements MoviesAdapter.AsyncDbSort.ProgressListener,
+            DeleteMovieDialogFragment.YesNoListener {
 
     private final String TAG = "Base";
 
@@ -58,7 +58,6 @@ public class BaseActivity extends AppCompatActivity
     private boolean mIsSortFinished = true;
     private boolean mDeleteInProgress = false;
 
-
     // Holds db across activity lifecycle
     //TODO use it to hold the state of controls and tasks instead of bundle?
     private WorkerFragment mWorker;
@@ -67,6 +66,8 @@ public class BaseActivity extends AppCompatActivity
     }
 
     final String ASYNCSORT = " Async sort method: ";
+
+    // ** Activity lifecycle members **
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,11 +109,6 @@ public class BaseActivity extends AppCompatActivity
                 Log.d(TAG, "mSortSpinner onItemSelected: adapterSort=" + mAdapter.getSortField() );
                 String sortField = (String)parent.getItemAtPosition(position);
                 setGoSortEnabled( (position != 0) && !sortField.equals(mAdapter.getSortField()));
-
-//                if (mSortSpinnerSavedPos >=0 && mSortSpinnerSavedPos != position) {
-//                    //TODO Is there a simpler way to apply action bar theme instead of spinner color?
-//                    invalidateOptionsMenu();
-//                }
                 mSortSpinnerSavedPos = position;
             }
 
@@ -122,7 +118,7 @@ public class BaseActivity extends AppCompatActivity
             }
         };
 
-        // * Set movie recycler but its adapter
+        // Set movie recycler but its adapter
         mGroupingRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mGroupingRecyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -131,15 +127,17 @@ public class BaseActivity extends AppCompatActivity
         mGroupingRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         // If a listener is also set for a TextView of the row in adapter / viewholder,
-        // first  Toast from this listener appears, then from TextView listener
+        // Toast from this listener's onItemClick() appears first, then from TextView listener
         mGroupingRecyclerView.addOnItemTouchListener(new OnMovieTouchListener(getApplicationContext(), mGroupingRecyclerView
                 , new OnMovieTouchListener.ClickListener() {
-            private final String TAG = "ClickListener(Main)";
+            private final static String TAG = "ClickListener(Main)";
 
             @Override
-            public void onClick(View view, int position) {
-                Log.d(TAG, "onClick: ");
-                // This titles may differ when adapter is not synchronized with rv.
+            public void onItemClick(View view, int position) {
+                Log.d(TAG, "onItemClick: ");
+                // This titles may differ when:
+                // 1) adapter is not synchronized with rv when doing async sort;
+                // 2) GroupingAdapter#onBindViewHolder adds number of items in group to the title.
                 TitledViewHolder mvh = (TitledViewHolder) mGroupingRecyclerView.getChildViewHolder(view);
                 String viewTitle = (String)mvh.getTitleView().getText();
                 Titled movie = mAdapter.getAt(position);
@@ -152,23 +150,24 @@ public class BaseActivity extends AppCompatActivity
             }
 
             @Override
-            public void onLongClick(View view, int position) {
-                Log.d(TAG, "onLongClick: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+            public void onItemLongClick(View view, int position) {
+                Log.d(TAG, "onItemLongClick: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
             }
 
             @Override
-            public void onZoomIn(View view, int position) {
-                Log.d(TAG, "onZoomIn: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
-
+            public void onItemZoomIn(View view, int position) {
+                Log.d(TAG, "onItemZoomIn: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+                //TODO insert new Movie
             }
 
             @Override
-            public void onZoomOut(View view, int position) {
-                Log.d(TAG, "onZoomOut: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+            public void onItemZoomOut(View view, int position) {
+                Log.d(TAG, "onItemZoomOut: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
                 if ((!mDeleteInProgress)  //TODO Check no any data operation, not only delete
+                        && (mIsSortFinished) // rv is sync. with adapter
                         && mAdapter.getItemViewType(position) == GroupingAdapter.DATAROW) {
                     mDeleteInProgress = true;
-                    Log.d(TAG, "onZoomOut: Creating delete dialog..");
+                    Log.d(TAG, "onItemZoomOut: Creating delete dialog..");
                     MovieViewHolder mvh = (MovieViewHolder)mGroupingRecyclerView.getChildViewHolder(view);
                     String msg = String.format(getString(R.string.delete_movie_dialog_message),
                             mvh.title.getText(), mvh.genre.getText(), mvh.year.getText());
@@ -179,31 +178,7 @@ public class BaseActivity extends AppCompatActivity
         }));
     }
 
-    @Override
-    public void onNo() {
-
-    }
-
-    @Override
-    public void onYes(int position) {
-
-        Log.d(TAG, "!! Gonna delete position =" + position);
-        try {
-            mAdapter.delete(position);
-            Log.d(TAG, "Deleted position =" + position);
-        } catch (IOException e) {
-            Log.e(TAG, "!!FAILED to delete position =" + position, e);
-        }
-    }
-
-    @Override
-    public void onDismiss() {
-        // dismissed  by CANCEL/ OK + exec action / click outside the dialog
-        Log.d(TAG, "Delete Dialog was dismissed by user action on it.");
-        mDeleteInProgress = false;
-    }
-
-    @Override
+   @Override
     protected void onStart() {
         super.onStart();
         // Fragment's onCreate() is executed, ready to get adapter
@@ -235,19 +210,92 @@ public class BaseActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Needn't it in the retaining adapter version
+        //mAdapter.onSaveInstanceState(outState);
+        outState.putInt(SORTSPINNERPOS, mSortSpinnerSavedPos);
+        outState.putBoolean(ISSORTFINISHED, mIsSortFinished);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // Needn't it in the retaining adapter version
+        //mAdapter.onRestoreInstanceState(savedInstanceState);
+        mSortSpinnerSavedPos = savedInstanceState.getInt(SORTSPINNERPOS);
+        mIsSortFinished = savedInstanceState.getBoolean(ISSORTFINISHED);
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop: ");
-        /* Db saves itself when cloning
-        // Save data at screen rotation. Data will be restored in OnCreate().
-        try {
-            mMovieDb.save();
-        }
-        catch (Exception e){
-            Log.e(TAG, "onStop: save() failed ",e);
-        }
-        */
     }
+
+    // ** DeleteMovieDialogFragment.YesNoListener members **
+
+    @Override
+    public void onDeleteNo() {
+
+    }
+
+    @Override
+    public void onDeleteYes(int position) {
+
+        Log.d(TAG, "!! Gonna delete position =" + position);
+        try {
+            mAdapter.delete(position);
+            Log.d(TAG, "Deleted position =" + position);
+        } catch (IOException e) {
+            Log.e(TAG, "!!FAILED to delete position =" + position, e);
+        }
+    }
+
+    @Override
+    public void onDeleteDismiss() {
+        // dismissed  by CANCEL/ OK + exec action / click outside the dialog
+        Log.d(TAG, "Delete Dialog was dismissed by user action on it.");
+        mDeleteInProgress = false;
+    }
+
+    // ** MoviesAdapter.AsyncDbSort.ProgressListener members **
+
+    @Override
+    public MoviesAdapter.AsyncDbSort.ProgressListener getCurrentInstance() {
+        // mWorker should know it see onCreate()
+        return mWorker.getCurrentBaseActivity();
+    }
+
+    @Override
+    public void onAsyncSortStart(String msg) {
+        mIsSortFinished = false;
+        setGoSortEnabled(false);
+        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_LONG)
+                .show();
+    }
+
+    @Override
+    public void onAsyncSortProgess(String msg) {
+        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
+                .show();
+    }
+
+    @Override
+    public void onAsyncSortDone(String msg) {
+        mIsSortFinished = true;
+        Log.d(TAG, "onAsyncSortDone: ");
+        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
+                .show();
+        mAdapter.notifyDataSetChanged();
+        if (mSortSpinner.getSelectedItemPosition() >0 ) {
+            String sortField = (String) mSortSpinner.getSelectedItem();
+            setGoSortEnabled(!sortField.equals(mAdapter.getSortField()));
+        }
+    }
+
+    // ** XML menu android:onClick= **
 
     public void moreButtonClicked(MenuItem itm) throws IOException {
         // Direct db update requires total adapter reload.
@@ -272,6 +320,8 @@ public class BaseActivity extends AppCompatActivity
         }
     }
 
+    // ** Helper methods **
+
     /**
      *  setEnabled(enabled & mIsSortFinished) and apply colorFilter accordingly
      * @param enabled
@@ -286,57 +336,4 @@ public class BaseActivity extends AppCompatActivity
             mGoSort.getIcon().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Needn't it in the retaining adapter version
-        //mAdapter.onSaveInstanceState(outState);
-        outState.putInt(SORTSPINNERPOS, mSortSpinnerSavedPos);
-        outState.putBoolean(ISSORTFINISHED, mIsSortFinished);
-
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        // Needn't it in the retaining adapter version
-        //mAdapter.onRestoreInstanceState(savedInstanceState);
-        mSortSpinnerSavedPos = savedInstanceState.getInt(SORTSPINNERPOS);
-        mIsSortFinished = savedInstanceState.getBoolean(ISSORTFINISHED);
-    }
-
-    // ProgressListener members
-
-    @Override
-    public MoviesAdapter.AsyncDbSort.ProgressListener getCurrentInstance() {
-        // mWorker should know it see onCreate()
-        return mWorker.getCurrentBaseActivity();
-    }
-
-    @Override
-    public void onStart(String msg) {
-        mIsSortFinished = false;
-        setGoSortEnabled(false);
-        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_LONG)
-                .show();
-    }
-
-    @Override
-    public void onProgess(String msg) {
-        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
-                .show();
-    }
-
-    @Override
-    public void onDone(String msg) {
-        mIsSortFinished = true;
-        Log.d(TAG, "onDone: ");
-        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
-                .show();
-        mAdapter.notifyDataSetChanged();
-        if (mSortSpinner.getSelectedItemPosition() >0 ) {
-            String sortField = (String) mSortSpinner.getSelectedItem();
-            setGoSortEnabled(!sortField.equals(mAdapter.getSortField()));
-        }
-    }
 }

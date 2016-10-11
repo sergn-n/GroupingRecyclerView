@@ -91,9 +91,9 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
              * @return
              */
             ProgressListener getCurrentInstance();
-            void onStart(String msg);
-            void onProgess(String msg);
-            void onDone(String msg);
+            void onAsyncSortStart(String msg);
+            void onAsyncSortProgess(String msg);
+            void onAsyncSortDone(String msg);
         }
 
         MoviesAdapter ma;
@@ -129,7 +129,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            progressListener.getCurrentInstance().onStart("Gonna sort it in a while...\n"
+            progressListener.getCurrentInstance().onAsyncSortStart("Gonna sort it in a while...\n"
                     +"OK to change config here.");
         }
 
@@ -137,13 +137,13 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
         protected void onProgressUpdate(String... values) {
             // old instace really will do too, as listener only  shows a Toast
             super.onProgressUpdate(values);
-            progressListener.getCurrentInstance().onProgess(values[0]);
+            progressListener.getCurrentInstance().onAsyncSortProgess(values[0]);
         }
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            progressListener.getCurrentInstance().onDone(s);
+            progressListener.getCurrentInstance().onAsyncSortDone(s);
         }
 
     }
