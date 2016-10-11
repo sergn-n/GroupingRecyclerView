@@ -160,12 +160,13 @@ public class MovieDb implements Db<Movie>
 
     // #region Data Modification
 
-    public void Insert (Movie m, int sortedPos){
+    public void insert (Movie m, int sortedPos){
         movieList.add(m);
         sortedMovieList.add(sortedPos,m);
     }
 
-    public boolean Delete(Movie m) throws IOException{
+    @Override
+    public boolean delete(Movie m) throws IOException{
         if (movieList.remove(m)){
             save();
             if (sortedMovieList != null)

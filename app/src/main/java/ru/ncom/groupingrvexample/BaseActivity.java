@@ -27,9 +27,11 @@ import java.io.IOException;
 import java.util.List;
 
 
+import ru.ncom.groupingrvadapter.GroupingAdapter;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
 
+import ru.ncom.groupingrvexample.adapter.MovieViewHolder;
 import ru.ncom.groupingrvexample.adapter.MoviesAdapter;
 import ru.ncom.groupingrvexample.model.Movie;
 import ru.ncom.groupingrvexample.model.MovieDb;
@@ -54,7 +56,7 @@ public class BaseActivity extends AppCompatActivity
     private MenuItem mGoSort;
     private final String ISSORTFINISHED = "ISSORTFINISHED";
     private boolean mIsSortFinished = true;
-    private DeleteMovieDialogFragment mDeleteDialog;
+    private boolean mDeleteInProgress = false;
 
 
     // Holds db across activity lifecycle
@@ -163,11 +165,15 @@ public class BaseActivity extends AppCompatActivity
             @Override
             public void onZoomOut(View view, int position) {
                 Log.d(TAG, "onZoomOut: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
-                if (mDeleteDialog == null) {
-                    mDeleteDialog = DeleteMovieDialogFragment.createInstance(
-                            getString(R.string.delete_movie_dialog_message), position);
-
-                    mDeleteDialog.show(getSupportFragmentManager(), "tagDeleteMovie"); // or getFragmentManager()                    mDeleteDialog = new AlertDialog.Builder(BaseActivity.this);
+                if ((!mDeleteInProgress)  //TODO Check no any data operation, not only delete
+                        && mAdapter.getItemViewType(position) == GroupingAdapter.DATAROW) {
+                    mDeleteInProgress = true;
+                    Log.d(TAG, "onZoomOut: Creating delete dialog..");
+                    MovieViewHolder mvh = (MovieViewHolder)mGroupingRecyclerView.getChildViewHolder(view);
+                    String msg = String.format(getString(R.string.delete_movie_dialog_message),
+                            mvh.title.getText(), mvh.genre.getText(), mvh.year.getText());
+                    DeleteMovieDialogFragment.createInstance(msg, position)
+                            .show(getSupportFragmentManager(), "tagDeleteMovie");
                 }
             }
         }));
@@ -180,15 +186,21 @@ public class BaseActivity extends AppCompatActivity
 
     @Override
     public void onYes(int position) {
+
         Log.d(TAG, "!! Gonna delete position =" + position);
-        //mAdapter.delete(position);
+        try {
+            mAdapter.delete(position);
+            Log.d(TAG, "Deleted position =" + position);
+        } catch (IOException e) {
+            Log.e(TAG, "!!FAILED to delete position =" + position, e);
+        }
     }
 
     @Override
     public void onDismiss() {
-        // dismissed  by CANCEL/ OK / click outside the dialog
+        // dismissed  by CANCEL/ OK + exec action / click outside the dialog
         Log.d(TAG, "Delete Dialog was dismissed by user action on it.");
-        mDeleteDialog = null;
+        mDeleteInProgress = false;
     }
 
     @Override
