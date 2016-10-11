@@ -7,8 +7,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -20,11 +23,11 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     /**
      * Row type: row of data of T type
      */
-    public final int DATAROW = 1;
+    public static final int DATAROW = 1;
     /**
      * Row type: header of the group of rows of data of T type
      */
-    public final int HEADERROW = 2;
+    public static final int HEADERROW = 2;
 
     private final String COLLAPSEDHEADERS = "COLLAPSEDHEADERS";
     private final String SORTFIELDNAME = "SORTFIELDNAME";
@@ -36,6 +39,8 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     private ArrayList<String> mCollapsedHeaders = null;
     private String mSortFieldName = null;
 
+    private Map<T,Header<T>> mItems2Headers = new HashMap<>();
+
     public GroupingAdapter(Class<T> clazz, Db<T> db) {
         this.mClass = clazz;
         this.mDb = db;
@@ -43,9 +48,13 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         load();
     }
 
+    /**
+     * Loads unordered data into itemsList.
+     */
     private void load() {
         saveCollapsedHeaders();
         itemsList.clear();
+        mItems2Headers.clear();
         List<T> ml = mDb.getDataList();
         for (int i = 0; i < ml.size(); i++){
             itemsList.add(ml.get(i));
@@ -148,6 +157,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         List<T> ml = mDb.orderBy(mcb);
         Header<T> h = null;
         itemsList.clear();
+        mItems2Headers.clear();
         for (int i = 0; i < ml.size(); i++) {
             T m = ml.get(i);
             String newTitle = mcb.getGroupTitle(m);
@@ -162,6 +172,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
             if (!h.isCollapsed())
                 itemsList.add(m);
             h.getChildItemList().add(m);
+            mItems2Headers.put(m,h);
         }
         //  Clear restored collapsed headers till next configuration change
         mCollapsedHeaders = null;
@@ -260,5 +271,51 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
             int headerPosition = mRecyclerView.getChildLayoutPosition(view);
             toggleCollapseExpand(headerPosition);
         }
+    }
+
+    // ** Data manipulation **
+
+    public void delete(int position) throws IOException{
+        Titled t = getAt(position);
+        if (!isDataClass(t))
+            return;
+        T item = (T) t;
+        if (!mDb.delete(item))
+            return;
+
+        // Quick and dirty, general notification
+        //reload();
+
+        // Exact notification
+        int count = 0;
+        int pos = 0;
+        Header<T> h = mItems2Headers.get(t);
+        if (h==null){ // not sorted
+            pos = itemsList.indexOf(t);
+            itemsList.remove(pos); //
+            count++;
+        }
+        else {
+            if (h.getChildItemList().size() == 1) {
+                // the only item in group, remove header too
+                pos = itemsList.indexOf(h);
+                if (!h.isCollapsed()) {
+                    // t must be on the itemsList immediately after h
+                    itemsList.remove(pos + 1);
+                    count++;
+                }
+                itemsList.remove(pos);
+                count++;
+            } else {
+                h.getChildItemList().remove(t);
+                if (!h.isCollapsed()) {
+                    pos = itemsList.indexOf(t);
+                    itemsList.remove(pos); //
+                    count++;
+                }
+            }
+            mItems2Headers.remove(t);
+        }
+        notifyItemRangeRemoved(pos,count);
     }
 }
