@@ -28,7 +28,7 @@ public class MovieDb implements Db<Movie>
 
     private Context mContext;
     // Sorted (if requested)
-    private ArrayList<Movie> sortedMovieList = null;
+    private ArrayList<Movie> mSortedMovieList = null;
     // Original data
     private ArrayList<Movie> movieList;
 
@@ -133,24 +133,24 @@ public class MovieDb implements Db<Movie>
         }
         if (n>0) {
             save();
-            sortedMovieList = null;
+            mSortedMovieList = null;
         }
     }
 
     @Override
     public List<Movie> getDataList() {
-        if (sortedMovieList == null) {
-            sortedMovieList = new ArrayList<>(movieList.size());
+        if (mSortedMovieList == null) {
+            mSortedMovieList = new ArrayList<>(movieList.size());
             for (int i = 0; i < movieList.size(); i++)
-                sortedMovieList.add(movieList.get(i));
+                mSortedMovieList.add(movieList.get(i));
         }
-        return sortedMovieList;
+        return mSortedMovieList;
     }
 
     @Override
     public List<Movie> orderBy(Comparator<Movie> mcb) {
         Collections.sort(getDataList(),mcb);
-        return sortedMovieList;
+        return mSortedMovieList;
     }
 
     @Override
@@ -160,28 +160,31 @@ public class MovieDb implements Db<Movie>
 
     // #region Data Modification
 
-    public void insert (Movie m, int sortedPos){
+    @Override
+    public void insert (Movie m, String orderByFieldName){
         movieList.add(m);
-        sortedMovieList.add(sortedPos,m);
+        if (orderByFieldName != null )
+            //TODO Is it fast to sort sorted + 1 unsorted ?
+            orderBy(getComparatorGrouper(orderByFieldName));
     }
 
     @Override
     public boolean delete(Movie m) throws IOException{
         if (movieList.remove(m)){
             save();
-            if (sortedMovieList != null)
-                sortedMovieList.remove(m);
+            if (mSortedMovieList != null)
+                mSortedMovieList.remove(m);
             return true;
         }
         return false;
     }
 
-    public boolean Delete(int sortedPos) throws IOException{
-        if (sortedMovieList != null) {
-            Movie m = sortedMovieList.get(sortedPos);
+    public boolean delete(int sortedPos) throws IOException{
+        if (mSortedMovieList != null) {
+            Movie m = mSortedMovieList.get(sortedPos);
             if (movieList.remove(m)){
                 save();
-                sortedMovieList.remove(sortedPos);
+                mSortedMovieList.remove(sortedPos);
                 return true;
             }
         }

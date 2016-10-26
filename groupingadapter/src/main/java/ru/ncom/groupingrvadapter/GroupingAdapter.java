@@ -35,36 +35,36 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     private final Class<T> mClass;
     private final Db<T> mDb;
 
-    private final List<Titled> itemsList = new ArrayList<>();
+    private final List<Titled> mItemsList = new ArrayList<>();
+    private Map<T,Header<T>> mItems2Headers = new HashMap<>();
+
     private ArrayList<String> mCollapsedHeaders = null;
     private String mSortFieldName = null;
-
-    private Map<T,Header<T>> mItems2Headers = new HashMap<>();
 
     public GroupingAdapter(Class<T> clazz, Db<T> db) {
         this.mClass = clazz;
         this.mDb = db;
-        // initially itemsList is just source data
+        // initially mItemsList is just source data
         load();
     }
 
     /**
-     * Loads unordered data into itemsList.
+     * Loads unordered data into mItemsList.
      */
     private void load() {
         saveCollapsedHeaders();
-        itemsList.clear();
+        mItemsList.clear();
         mItems2Headers.clear();
         List<T> ml = mDb.getDataList();
         for (int i = 0; i < ml.size(); i++){
-            itemsList.add(ml.get(i));
+            mItemsList.add(ml.get(i));
         }
     }
 
     private void saveCollapsedHeaders(){
         mCollapsedHeaders = new ArrayList<>();
-        for (int i=0; i<itemsList.size(); i++){
-            Titled itm = itemsList.get(i);
+        for (int i = 0; i< mItemsList.size(); i++){
+            Titled itm = mItemsList.get(i);
             if ((!isDataClass(itm)) && ((Header<T>)itm).isCollapsed())
                 mCollapsedHeaders.add(itm.getTitle());
         }
@@ -83,14 +83,14 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     @Override
     public int getItemViewType(int position) {
-        if (isDataClass(itemsList.get(position)))
+        if (isDataClass(mItemsList.get(position)))
             return DATAROW;
         return HEADERROW;
     }
 
     @Override
     public int getItemCount() {
-        return itemsList.size();
+        return mItemsList.size();
     }
 
     /**
@@ -116,7 +116,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
      */
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Titled item = itemsList.get(position);
+        Titled item = mItemsList.get(position);
         if (holder.getItemViewType() == HEADERROW )
             holder.itemView.setOnClickListener(mCollapseExpandCL);
         if (item instanceof Selectable)
@@ -132,7 +132,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     @Override
     public Titled getAt(int position) {
-        return itemsList.get(position);
+        return mItemsList.get(position);
     }
 
     public String getSortField() {
@@ -156,21 +156,21 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         ComparatorGrouper<T> mcb = mDb.getComparatorGrouper(sortField);
         List<T> ml = mDb.orderBy(mcb);
         Header<T> h = null;
-        itemsList.clear();
+        mItemsList.clear();
         mItems2Headers.clear();
         for (int i = 0; i < ml.size(); i++) {
             T m = ml.get(i);
             String newTitle = mcb.getGroupTitle(m);
             if ((h==null) || !newTitle.equals(h.getTitle())) {
                 h = new Header<>(newTitle);
-                itemsList.add(h);
+                mItemsList.add(h);
                 if (mCollapsedHeaders != null //sort is fired by restoring after configuration change
                         && mCollapsedHeaders.indexOf(newTitle) >= 0){
                     h.setCollapsed(true);
                 }
             }
             if (!h.isCollapsed())
-                itemsList.add(m);
+                mItemsList.add(m);
             h.getChildItemList().add(m);
             mItems2Headers.put(m,h);
         }
@@ -201,7 +201,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         if (childItemList != null) {
             count = childItemList.size();
             for (int i = 0; i < count; i++) {
-                itemsList.add(headerPosition + i + 1, childItemList.get(i));
+                mItemsList.add(headerPosition + i + 1, childItemList.get(i));
             }
         }
         h.setCollapsed(false);
@@ -214,7 +214,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         if (childItemList != null) {
             count = childItemList.size();
             for (int i = count - 1; i >= 0; i--) {
-                itemsList.remove(headerPosition + i + 1);
+                mItemsList.remove(headerPosition + i + 1);
             }
         }
         h.setCollapsed(true);
@@ -222,7 +222,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     }
 
     private void toggleCollapseExpand(int headerPosition) {
-        Titled itm = itemsList.get(headerPosition);
+        Titled itm = mItemsList.get(headerPosition);
         if (!isDataClass(itm)) {
             // clear restored state
             mCollapsedHeaders = null;
@@ -279,43 +279,90 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         Titled t = getAt(position);
         if (!isDataClass(t))
             return;
-        T item = (T) t;
+        T item = (T)t;
         if (!mDb.delete(item))
             return;
-
-        // Quick and dirty, general notification
-        //reload();
 
         // Exact notification
         int count = 0;
         int pos = 0;
-        Header<T> h = mItems2Headers.get(t);
-        if (h==null){ // not sorted
-            pos = itemsList.indexOf(t);
-            itemsList.remove(pos); //
+        int tpos = mItemsList.indexOf(t);
+        if ( tpos >=0 ){ //not sorted or sorted and not collapsed
+            mItemsList.remove(tpos);
             count++;
+            pos = tpos;
         }
-        else {
+        Header<T> h = mItems2Headers.get(t);
+        if (h != null){ // sorted
             if (h.getChildItemList().size() == 1) {
-                // the only item in group, remove header too
-                pos = itemsList.indexOf(h);
-                if (!h.isCollapsed()) {
-                    // t must be on the itemsList immediately after h
-                    itemsList.remove(pos + 1);
-                    count++;
-                }
-                itemsList.remove(pos);
+                // the only item in group, remove the header
+                // it's pos must be just before t (if it's not collapsed)
+                pos = mItemsList.indexOf(h);
+                mItemsList.remove(pos);
                 count++;
             } else {
                 h.getChildItemList().remove(t);
-                if (!h.isCollapsed()) {
-                    pos = itemsList.indexOf(t);
-                    itemsList.remove(pos); //
-                    count++;
-                }
             }
             mItems2Headers.remove(t);
         }
         notifyItemRangeRemoved(pos,count);
+    }
+
+    public void insert(T item){
+        // Quick and dirty solution, general notification
+        mDb.insert(item, null);
+        reload();
+/* Exact Notification
+        int count = 0;
+        int pos = 0;
+        if (mItems2Headers.size() == 0){
+            // Not sorted
+            pos = mItemsList.size();
+            mItemsList.add(item);
+            count++;
+        } else {
+            // find or create header h
+            int posInHeader // pos in group members
+            ...
+        }
+*/
+    }
+
+    // binary search
+    private final int OPENINTERVAL =-1;
+    private class BSearchResult {
+        public int left = OPENINTERVAL;
+        public int right = OPENINTERVAL;
+
+    }
+
+    /**
+     *  Returns interval (left right), may be open.
+     * @param item
+     * @param mData
+     * @param left
+     * @param right
+     * @return
+     */
+    private BSearchResult findIndexOf(T item, List<T> mData, int left, int right) {
+        ComparatorGrouper<T> cg = mDb.getComparatorGrouper(mSortFieldName);
+        BSearchResult bsr = new BSearchResult();
+        while (left <= right) {
+            final int middle = (left + right) / 2;
+            T myItem = mData.get(middle);
+            final int cmp = cg.compare(myItem, item);
+            if (cmp < 0) {
+                bsr.left = middle;
+                left = middle + 1;
+            } else if (cmp == 0) {
+                bsr.left = middle;
+                bsr.right= middle;
+                return bsr;
+            } else {
+                bsr.right = middle;
+                right = middle - 1;
+            }
+        }
+        return bsr;
     }
 }
