@@ -178,7 +178,7 @@ public class BaseActivity extends AppCompatActivity
         }));
     }
 
-   @Override
+    @Override
     protected void onStart() {
         super.onStart();
         // Fragment's onCreate() is executed, ready to get adapter

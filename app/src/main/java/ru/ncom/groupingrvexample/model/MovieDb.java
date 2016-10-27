@@ -164,7 +164,7 @@ public class MovieDb implements Db<Movie>
     public void insert (Movie m, String orderByFieldName){
         movieList.add(m);
         if (orderByFieldName != null )
-            //TODO Is it fast to sort sorted + 1 unsorted ?
+            //Sorting of N sorted + 1 unsorted is fast see TimSoft#countRunAndMakeAscending
             orderBy(getComparatorGrouper(orderByFieldName));
     }
 

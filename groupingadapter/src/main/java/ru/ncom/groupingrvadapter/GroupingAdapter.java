@@ -309,8 +309,8 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     }
 
     public void insert(T item){
-        // Quick and dirty solution, general notification
         mDb.insert(item, null);
+        // Quick and dirty solution, general notification
         reload();
 /* Exact Notification
         int count = 0;
