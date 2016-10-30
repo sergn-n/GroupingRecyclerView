@@ -11,6 +11,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import ru.ncom.groupingrvadapter.ComparatorGrouper;
 import ru.ncom.groupingrvadapter.GroupingAdapter;
 import ru.ncom.groupingrvadapter.Header;
 import ru.ncom.groupingrvadapter.Titled;
@@ -26,8 +27,8 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     private final String TAG = "MoviesAdapter";
 
-    public MoviesAdapter(MovieDb db) {
-        super(Movie.class, db);
+    public MoviesAdapter() {
+        super(Movie.class);
     }
 
     @Override
@@ -75,78 +76,6 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
         mToastClickListener = new ToastOnClickListener(rv);
     }
 
-    // Simulate asynch operation: ordering using protected doOrder()
-    /**
-     * @param sortField
-     * @param progressView
-     */
-    public void orderByAsync (String sortField, AsyncDbSort.ProgressListener progressView) {
-        (new AsyncDbSort(this, progressView)).execute(sortField);
-    }
-
-    public static class AsyncDbSort extends AsyncTask<String,String,String> {
-
-        public interface ProgressListener{
-            /** After config change old instance must know current instance
-             * @return
-             */
-            ProgressListener getCurrentInstance();
-            void onAsyncSortStart(String msg);
-            void onAsyncSortProgess(String msg);
-            void onAsyncSortDone(String msg);
-        }
-
-        MoviesAdapter ma;
-        ProgressListener progressListener;
-
-        public AsyncDbSort(MoviesAdapter ma, ProgressListener progressListener ){
-            this.ma = ma;
-            this.progressListener = progressListener;
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            // If config change occurs here, it' OK, persistent adapter version
-            try {
-                Thread.sleep(3000);
-            }
-            catch (InterruptedException e) {
-                //intentionally empty
-            }
-            //
-            ma.doOrder(params[0]);
-            publishProgress ("Sorted, notifying...");
-            try {
-                Thread.sleep(7000);
-            }
-            catch (InterruptedException e) {
-                //intentionally empty
-            }
-            return "Done.";
-        }
-
-        // Deliver events to current instance of activity
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressListener.getCurrentInstance().onAsyncSortStart("Gonna sort it in a while...\n"
-                    +"OK to change config here.");
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            // old instace really will do too, as listener only  shows a Toast
-            super.onProgressUpdate(values);
-            progressListener.getCurrentInstance().onAsyncSortProgess(values[0]);
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            progressListener.getCurrentInstance().onAsyncSortDone(s);
-        }
-
-    }
 
     // Demo listener, is applied to childs of Data row
 
@@ -175,5 +104,10 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
             // selection test
 
         }
+    }
+
+    @Override
+    public ComparatorGrouper<Movie> getComparatorGrouper(String orderByFieldName) {
+        return Movie.getComparatorGrouper(orderByFieldName);
     }
 }

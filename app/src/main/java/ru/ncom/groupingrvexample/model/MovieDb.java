@@ -1,6 +1,7 @@
 package ru.ncom.groupingrvexample.model;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.FileInputStream;
@@ -9,47 +10,27 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-import ru.ncom.groupingrvadapter.ComparatorGrouper;
-import ru.ncom.groupingrvadapter.Db;
-
+import ru.ncom.groupingrvadapter.GroupedList;
+import ru.ncom.groupingrvexample.adapter.MoviesAdapter;
 
 /**
  * Created by gerg on 05.09.2016.
  */
 
-public class MovieDb implements Db<Movie>
+public class MovieDb
 {
     private static String FILENAME ="Movies.ser";
     private static String TAG ="MovieDb";
 
     private Context mContext;
-    // Sorted (if requested)
-    private ArrayList<Movie> mSortedMovieList = null;
+
     // Original data
-    private ArrayList<Movie> movieList;
+    private ArrayList<Movie> movieList = null;
 
     public MovieDb(Context ctx) {
         mContext = ctx;
-        try {
-            read();
-            Log.d(TAG, "Read from "+ FILENAME);
-        }
-        catch (Exception e) {
-            // no file to read, generate data and save.
-            generate();
-            try {
-                save();
-                Log.d(TAG, "Generated and saved to "+ FILENAME);
-            }
-            catch (Exception ex)
-            {
-                Log.e(TAG,"Failed to save to "+ FILENAME, ex);
-            }
-        }
     }
 
     private void generate() {
@@ -122,73 +103,134 @@ public class MovieDb implements Db<Movie>
     }
 
     /**
-     * Repeat current list 2**n times (n>0)
+     * Repeat current list n times (n>0)
      * @param n
      */
-    public void cloneData(int n) throws IOException {
+    public List<Movie> cloneData(int n) throws IOException {
+        getDataList();
+        int size = movieList.size();
+        List<Movie> newItems = new ArrayList<Movie>(n * size);
         for (int i=0; i<n; i++) {
-            int size = movieList.size();
             for (int j = 0; j < size; j++)
-                movieList.add(movieList.get(j).clone());
+                newItems.add(movieList.get(j).clone());
         }
         if (n>0) {
+            movieList.addAll(newItems);
             save();
-            mSortedMovieList = null;
         }
+        return newItems;
     }
 
-    @Override
     public List<Movie> getDataList() {
-        if (mSortedMovieList == null) {
-            mSortedMovieList = new ArrayList<>(movieList.size());
-            for (int i = 0; i < movieList.size(); i++)
-                mSortedMovieList.add(movieList.get(i));
+        if (movieList==null) {
+            try {
+                read();
+                Log.d(TAG, "Read from " + FILENAME);
+            } catch (Exception e) {
+                // no file to read, generate data and save.
+                generate();
+                try {
+                    save();
+                    Log.d(TAG, "Generated and saved to " + FILENAME);
+                } catch (Exception ex) {
+                    Log.e(TAG, "Failed to save to " + FILENAME, ex);
+                }
+            }
+
         }
-        return mSortedMovieList;
+        return movieList;
     }
 
-    @Override
-    public List<Movie> orderBy(Comparator<Movie> mcb) {
-        Collections.sort(getDataList(),mcb);
-        return mSortedMovieList;
-    }
-
-    @Override
-    public ComparatorGrouper<Movie> getComparatorGrouper(String orderByFieldName) {
-        return Movie.getComparatorGrouper(orderByFieldName);
-    }
 
     // #region Data Modification
 
-    @Override
-    public void insert (Movie m, String orderByFieldName){
+    public void add (Movie m)throws IOException{
         movieList.add(m);
-        if (orderByFieldName != null )
-            //Sorting of N sorted + 1 unsorted is fast see TimSoft#countRunAndMakeAscending
-            orderBy(getComparatorGrouper(orderByFieldName));
+        save();
     }
 
-    @Override
+
     public boolean delete(Movie m) throws IOException{
         if (movieList.remove(m)){
             save();
-            if (mSortedMovieList != null)
-                mSortedMovieList.remove(m);
             return true;
         }
         return false;
     }
 
-    public boolean delete(int sortedPos) throws IOException{
-        if (mSortedMovieList != null) {
-            Movie m = mSortedMovieList.get(sortedPos);
-            if (movieList.remove(m)){
-                save();
-                mSortedMovieList.remove(sortedPos);
-                return true;
-            }
+    public Movie delete(int pos) throws IOException{
+        Movie m = movieList.remove(pos);
+        if (m != null){
+            save();
         }
-        return false;
+        return m;
+    }
+
+
+    // Simulate asynch operation
+
+    public static class AsyncDbSort extends AsyncTask<String,String,String> {
+
+        public interface ProgressListener{
+            /** After config change old instance must know current instance
+             * @return
+             */
+            ProgressListener getCurrentInstance();
+            void onAsyncSortStart(String msg);
+            void onAsyncSortProgess(String msg);
+            void onAsyncSortDone(String msg);
+        }
+
+        GroupedList<Movie> ma;
+        ProgressListener progressListener;
+
+        public AsyncDbSort(GroupedList<Movie> ma, ProgressListener progressListener ){
+            this.ma = ma;
+            this.progressListener = progressListener;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            // If config change occurs here, it' OK, persistent adapter version
+            try {
+                Thread.sleep(3000);
+            }
+            catch (InterruptedException e) {
+                //intentionally empty
+            }
+            //
+            ma.sort(params[0]);
+            publishProgress ("Sorted, notifying...");
+            try {
+                Thread.sleep(7000);
+            }
+            catch (InterruptedException e) {
+                //intentionally empty
+            }
+            return "Done.";
+        }
+
+        // Deliver events to current instance of activity
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressListener.getCurrentInstance().onAsyncSortStart("Gonna sort it in a while...\n"
+                    +"OK to change config here.");
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            // old instace really will do too, as listener only  shows a Toast
+            super.onProgressUpdate(values);
+            progressListener.getCurrentInstance().onAsyncSortProgess(values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            progressListener.getCurrentInstance().onAsyncSortDone(s);
+        }
+
     }
 
 }

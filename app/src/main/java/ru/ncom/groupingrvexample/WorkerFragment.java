@@ -5,7 +5,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
+import ru.ncom.groupingrvadapter.GroupedList;
 import ru.ncom.groupingrvexample.adapter.MoviesAdapter;
+import ru.ncom.groupingrvexample.model.Movie;
 import ru.ncom.groupingrvexample.model.MovieDb;
 
 /**
@@ -25,6 +27,12 @@ public class WorkerFragment extends Fragment {
         return mMoviesAdapter;
     }
 
+    public GroupedList<Movie> getmGroupedMovies() {
+        return mGroupedMovies;
+    }
+
+    private GroupedList<Movie> mGroupedMovies;
+
     private BaseActivity currentBaseActivity;
     public BaseActivity getCurrentBaseActivity() {
         return currentBaseActivity;
@@ -43,6 +51,8 @@ public class WorkerFragment extends Fragment {
         Context appCtx = getActivity().getApplicationContext();
         // MovieDb needs context to get local file.
         mMovieDb = new MovieDb(appCtx);
-        mMoviesAdapter = new MoviesAdapter(mMovieDb);
+        mMoviesAdapter = new MoviesAdapter();
+        mGroupedMovies = new GroupedList<>(Movie.class, mMoviesAdapter);
+        mGroupedMovies.addAll(mMovieDb.getDataList());
     }
 }

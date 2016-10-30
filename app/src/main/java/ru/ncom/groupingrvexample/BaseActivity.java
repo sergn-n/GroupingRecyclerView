@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 
 
+import ru.ncom.groupingrvadapter.GroupedList;
 import ru.ncom.groupingrvadapter.GroupingAdapter;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
@@ -38,12 +39,13 @@ import ru.ncom.groupingrvexample.model.MovieDb;
 
 // Grouping RecyclerView demo activity : Movies
 public class BaseActivity extends AppCompatActivity
-        implements MoviesAdapter.AsyncDbSort.ProgressListener,
+        implements MovieDb.AsyncDbSort.ProgressListener,
             DeleteMovieDialogFragment.YesNoListener {
 
     private final String TAG = "Base";
 
     private MovieDb mMovieDb;
+    private GroupedList<Movie> mGroupedMovies;
     private RecyclerView mGroupingRecyclerView;
     private MoviesAdapter mAdapter;
 
@@ -176,6 +178,7 @@ public class BaseActivity extends AppCompatActivity
                 }
             }
         }));
+
     }
 
     @Override
@@ -184,6 +187,7 @@ public class BaseActivity extends AppCompatActivity
         // Fragment's onCreate() is executed, ready to get adapter
         mMovieDb = mWorker.getMovieDb();
         mAdapter = mWorker.getMoviesAdapter();
+        mGroupedMovies = mWorker.getmGroupedMovies();
         // Link newly created mGroupingRecyclerView and retaining mAdapter
         mGroupingRecyclerView.setAdapter(mAdapter);
     }
@@ -246,7 +250,9 @@ public class BaseActivity extends AppCompatActivity
 
         Log.d(TAG, "!! Gonna delete position =" + position);
         try {
-            mAdapter.delete(position);
+            Movie m = (Movie)mAdapter.getAt(position);
+            mMovieDb.delete(m);
+            mGroupedMovies.remove(m);
             Log.d(TAG, "Deleted position =" + position);
         } catch (IOException e) {
             Log.e(TAG, "!!FAILED to delete position =" + position, e);
@@ -263,7 +269,7 @@ public class BaseActivity extends AppCompatActivity
     // ** MoviesAdapter.AsyncDbSort.ProgressListener members **
 
     @Override
-    public MoviesAdapter.AsyncDbSort.ProgressListener getCurrentInstance() {
+    public MovieDb.AsyncDbSort.ProgressListener getCurrentInstance() {
         // mWorker should know it see onCreate()
         return mWorker.getCurrentBaseActivity();
     }
@@ -299,8 +305,8 @@ public class BaseActivity extends AppCompatActivity
 
     public void moreButtonClicked(MenuItem itm) throws IOException {
         // Direct db update requires total adapter reload.
-        mMovieDb.cloneData(1);
-        mAdapter.reload();
+        List<Movie> newItems = mMovieDb.cloneData(1);
+        mGroupedMovies.addAll(newItems);
     }
 
     public void goButtonClicked(MenuItem itm) {
@@ -312,10 +318,10 @@ public class BaseActivity extends AppCompatActivity
                 // Use sync sort for GENRE and YEAR
                 Toast.makeText(getApplicationContext()," Sync sort method.",Toast.LENGTH_SHORT)
                         .show();
-                mAdapter.orderBy(sortField);
+                mGroupedMovies.sort(sortField);
             } else {
                 // Use async sort for TITLE
-                mAdapter.orderByAsync(sortField, BaseActivity.this);
+                new MovieDb.AsyncDbSort(mGroupedMovies, BaseActivity.this).execute(sortField);
             }
         }
     }
