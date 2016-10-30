@@ -24,6 +24,7 @@ public class GroupedList<T extends Titled> {
     private String mSortFieldName = null;
 
     private final List<T> mItemsList = new ArrayList<>();
+
     private Map<T,Header<T>> mItems2Headers = new HashMap<>();
     private final List<Header> mHeaders = new ArrayList<>();
 
@@ -31,6 +32,13 @@ public class GroupedList<T extends Titled> {
     public GroupedList(Class<T> clazz, Callback<T> cb) {
         this.mClass = clazz;
         this.mCallback = cb;
+    }
+
+    public void clear(){
+        mItemsList.clear();
+        mItems2Headers.clear();
+        mHeaders.clear();
+        mCallback.onClear();
     }
 
     /**
@@ -48,6 +56,7 @@ public class GroupedList<T extends Titled> {
         }
         if (mSortFieldName == null) {
             mItemsList.addAll(items);
+            mCallback.onUngroupedItemsAdded(items);
             return;
         }
         GroupedList<T> newItems = new GroupedList<T>(mClass,null);
@@ -108,7 +117,7 @@ public class GroupedList<T extends Titled> {
         ComparatorGrouper cg = mCallback.getComparatorGrouper(sortField);
         doSort(cg);
 
-        mCallback.onDataSetChanged(mHeaders);
+        mCallback.onDataSorted(mHeaders);
     }
 
     protected void doSort(ComparatorGrouper cg) {
@@ -133,24 +142,66 @@ public class GroupedList<T extends Titled> {
         }
     }
 
-    public static abstract class Callback<T2 extends Titled>{
+    // binary search
+    private final int OPENINTERVAL =-1;
+    private class BSearchResult {
+        public int left = OPENINTERVAL;
+        public int right = OPENINTERVAL;
 
-        abstract public ComparatorGrouper<T2> getComparatorGrouper(String sortField) ;
+    }
 
-        abstract public void onDataSetChanged(List<Header<T2>> headers);
+    /**
+     *  Returns interval (left right), may be open.
+     * @param item
+     * @param mData
+     * @param left
+     * @param right
+     * @return
+     */
+    private BSearchResult findIndexOf(T item, List<T> mData, int left, int right) {
+        ComparatorGrouper<T> cg = mCallback.getComparatorGrouper(mSortFieldName);
+        BSearchResult bsr = new BSearchResult();
+        while (left <= right) {
+            final int middle = (left + right) / 2;
+            T myItem = mData.get(middle);
+            final int cmp = cg.compare(myItem, item);
+            if (cmp < 0) {
+                bsr.left = middle;
+                left = middle + 1;
+            } else if (cmp == 0) {
+                bsr.left = middle;
+                bsr.right= middle;
+                return bsr;
+            } else {
+                bsr.right = middle;
+                right = middle - 1;
+            }
+        }
+        return bsr;
+    }
 
-        abstract public void onHeaderRemoved(Header<T2> h);
+
+    public interface Callback<T2 extends Titled>{
+
+        ComparatorGrouper<T2> getComparatorGrouper(String sortField) ;
+
+        void onClear();
+
+        void onDataSorted(List<Header<T2>> headers);
+
+        void onUngroupedItemsAdded(List<T2> items);
+
+        void onHeaderRemoved(Header<T2> h);
 
         /**
          *
          * @param h header of the removed item
          * @param tpos position within the header
          */
-        abstract public void onGroupedItemRemoved(Header<T2> h, int tpos);
+        void onGroupedItemRemoved(Header<T2> h, int tpos);
 
-        abstract public void onUngroupedItemRemoved(int tpos);
+        void onUngroupedItemRemoved(int tpos);
 
     }
-
 
 }

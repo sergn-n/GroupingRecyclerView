@@ -18,7 +18,7 @@ import java.util.Map;
  * Created by Serg on 11.09.2016.
  */
 public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder>
-            implements GetterAtPosition {
+            implements GetterAtPosition, GroupedList.Callback<T> {
 
     /**
      * Row type: row of data of T type
@@ -33,7 +33,6 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     private final String SORTFIELDNAME = "SORTFIELDNAME";
 
     private final Class<T> mClass;
-    private final Db<T> mDb;
 
     private final List<Titled> mItemsList = new ArrayList<>();
     private Map<T,Header<T>> mItems2Headers = new HashMap<>();
@@ -41,24 +40,8 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     private ArrayList<String> mCollapsedHeaders = null;
     private String mSortFieldName = null;
 
-    public GroupingAdapter(Class<T> clazz, Db<T> db) {
+    public GroupingAdapter(Class<T> clazz) {
         this.mClass = clazz;
-        this.mDb = db;
-        // initially mItemsList is just source data
-        load();
-    }
-
-    /**
-     * Loads unordered data into mItemsList.
-     */
-    private void load() {
-        saveCollapsedHeaders();
-        mItemsList.clear();
-        mItems2Headers.clear();
-        List<T> ml = mDb.getDataList();
-        for (int i = 0; i < ml.size(); i++){
-            mItemsList.add(ml.get(i));
-        }
     }
 
     private void saveCollapsedHeaders(){
@@ -70,12 +53,6 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         }
     }
 
-    public void reload(){
-        load();
-        if (mSortFieldName != null)
-            doOrder(mSortFieldName);
-        notifyDataSetChanged();
-    }
 
     private boolean isDataClass(Titled tobj) {
         return mClass.isInstance(tobj);
@@ -139,46 +116,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         return mSortFieldName;
     }
 
-    // ** Ordering **
-
-    public void orderBy(String sortField) {
-        doOrder(sortField);
-        notifyDataSetChanged();
-    }
-
-    /**
-     * Sorts data by the specified field and creates headers. Uses {@link ComparatorGrouper}
-     * provided by {@link Db}
-     * @param sortField
-     */
-    protected void doOrder(String sortField) {
-        mSortFieldName = sortField;
-        ComparatorGrouper<T> mcb = mDb.getComparatorGrouper(sortField);
-        List<T> ml = mDb.orderBy(mcb);
-        Header<T> h = null;
-        mItemsList.clear();
-        mItems2Headers.clear();
-        for (int i = 0; i < ml.size(); i++) {
-            T m = ml.get(i);
-            String newTitle = mcb.getGroupTitle(m);
-            if ((h==null) || !newTitle.equals(h.getTitle())) {
-                h = new Header<>(newTitle);
-                mItemsList.add(h);
-                if (mCollapsedHeaders != null //sort is fired by restoring after configuration change
-                        && mCollapsedHeaders.indexOf(newTitle) >= 0){
-                    h.setCollapsed(true);
-                }
-            }
-            if (!h.isCollapsed())
-                mItemsList.add(m);
-            h.getChildItemList().add(m);
-            mItems2Headers.put(m,h);
-        }
-        //  Clear restored collapsed headers till next configuration change
-        mCollapsedHeaders = null;
-    }
-
-    // Call those methods from Activity when non-retaining adapter is used
+     // Call those methods from Activity when non-retaining adapter is used
 
     public void onSaveInstanceState(Bundle outState){
         outState.putString(SORTFIELDNAME,mSortFieldName);
@@ -190,7 +128,9 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         mCollapsedHeaders = savedInstanceState.getStringArrayList(COLLAPSEDHEADERS);
         mSortFieldName = savedInstanceState.getString(SORTFIELDNAME);
         if (mSortFieldName != null)
-            doOrder(mSortFieldName);
+            //TODO restore collapsing
+            // doOrder(mSortFieldName)
+        ;
     }
 
     //  **Collapse / expand group by clicking on header.**
@@ -275,94 +215,47 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     // ** Data manipulation **
 
-    public void delete(int position) throws IOException{
-        Titled t = getAt(position);
-        if (!isDataClass(t))
-            return;
-        T item = (T)t;
-        if (!mDb.delete(item))
-            return;
 
-        // Exact notification
-        int count = 0;
-        int pos = 0;
-        int tpos = mItemsList.indexOf(t);
-        if ( tpos >=0 ){ //not sorted or sorted and not collapsed
-            mItemsList.remove(tpos);
-            count++;
-            pos = tpos;
-        }
-        Header<T> h = mItems2Headers.get(t);
-        if (h != null){ // sorted
-            if (h.getChildItemList().size() == 1) {
-                // the only item in group, remove the header
-                // it's pos must be just before t (if it's not collapsed)
-                pos = mItemsList.indexOf(h);
-                mItemsList.remove(pos);
-                count++;
-            } else {
-                h.getChildItemList().remove(t);
-            }
-            mItems2Headers.remove(t);
-        }
-        notifyItemRangeRemoved(pos,count);
+    @Override
+    public void onClear() {
+        mItemsList.clear();
+        notifyDataSetChanged();
     }
 
-    public void insert(T item){
-        mDb.insert(item, null);
-        // Quick and dirty solution, general notification
-        reload();
-/* Exact Notification
-        int count = 0;
-        int pos = 0;
-        if (mItems2Headers.size() == 0){
-            // Not sorted
-            pos = mItemsList.size();
-            mItemsList.add(item);
-            count++;
-        } else {
-            // find or create header h
-            int posInHeader // pos in group members
-            ...
-        }
-*/
-    }
+    @Override
+    public abstract ComparatorGrouper<T> getComparatorGrouper(String sortField) ;
 
-    // binary search
-    private final int OPENINTERVAL =-1;
-    private class BSearchResult {
-        public int left = OPENINTERVAL;
-        public int right = OPENINTERVAL;
-
-    }
-
-    /**
-     *  Returns interval (left right), may be open.
-     * @param item
-     * @param mData
-     * @param left
-     * @param right
-     * @return
-     */
-    private BSearchResult findIndexOf(T item, List<T> mData, int left, int right) {
-        ComparatorGrouper<T> cg = mDb.getComparatorGrouper(mSortFieldName);
-        BSearchResult bsr = new BSearchResult();
-        while (left <= right) {
-            final int middle = (left + right) / 2;
-            T myItem = mData.get(middle);
-            final int cmp = cg.compare(myItem, item);
-            if (cmp < 0) {
-                bsr.left = middle;
-                left = middle + 1;
-            } else if (cmp == 0) {
-                bsr.left = middle;
-                bsr.right= middle;
-                return bsr;
-            } else {
-                bsr.right = middle;
-                right = middle - 1;
+    @Override
+    public void onDataSorted(List<Header<T>> headers) {
+        mItemsList.clear();
+        for (Header<T> h: headers) {
+            mItemsList.add(h);
+            for (T item: h.getChildItemList()) {
+                mItemsList.add(item);
             }
         }
-        return bsr;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void onUngroupedItemsAdded(List<T> items) {
+        int pos = mItemsList.size();
+        mItemsList.addAll(items);
+        notifyItemRangeInserted(pos, items.size());
+    }
+
+    @Override
+    public void onHeaderRemoved(Header h) {
+
+    }
+
+    @Override
+    public void onGroupedItemRemoved(Header h, int tpos) {
+
+    }
+
+    @Override
+    public void onUngroupedItemRemoved(int tpos) {
+
     }
 }
