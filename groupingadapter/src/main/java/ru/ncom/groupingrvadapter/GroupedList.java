@@ -19,14 +19,27 @@ import java.util.Map;
 
 public class GroupedList<T extends Titled> {
     private final Class<T> mClass;
+
     private Callback mCallback;
+    public Callback getCallback() {
+        return mCallback;
+    }
+
+
     // current sort field
     private String mSortFieldName = null;
+    public String getSortFieldName() {
+        return mSortFieldName;
+    }
 
     private final List<T> mItemsList = new ArrayList<>();
 
     private Map<T,Header<T>> mItems2Headers = new HashMap<>();
-    private final List<Header> mHeaders = new ArrayList<>();
+    public List<Header<T>> getHeaders() {
+        return mHeaders;
+    }
+
+    private final List<Header<T>> mHeaders = new ArrayList<>();
 
 
     public GroupedList(Class<T> clazz, Callback<T> cb) {
@@ -61,7 +74,7 @@ public class GroupedList<T extends Titled> {
         }
         GroupedList<T> newItems = new GroupedList<T>(mClass,null);
         newItems.addAll(items);
-        newItems.doSort(mCallback.getComparatorGrouper(mSortFieldName));
+        newItems.doSort(mSortFieldName);
         merge(newItems);
     }
 
@@ -109,23 +122,22 @@ public class GroupedList<T extends Titled> {
      * Sorts data by the specified field and creates ordered headers.
      */
     public void sort(String sortField) {
+        doSort(sortField);
+
+        mCallback.onDataSorted(this);
+    }
+
+    public List<Header<T>> doSort(String sortField) {
         mSortFieldName = sortField;
         mItems2Headers.clear();
         mHeaders.clear();
         if (mItemsList.size() == 0)
-            return;
+            return mHeaders;
+
         ComparatorGrouper cg = mCallback.getComparatorGrouper(sortField);
-        doSort(cg);
-
-        mCallback.onDataSorted(mHeaders);
-    }
-
-    protected void doSort(ComparatorGrouper cg) {
-
         if (mItemsList.size() > 1)
             Collections.sort(mItemsList, cg);
-
-        Header<T> h = new Header<T>(cg.getGroupTitle(mItemsList.get(0)));
+        Header<T> h = new Header<>(cg.getGroupTitle(mItemsList.get(0)));
         mHeaders.add(h);
         for (int i = 1; i < mItemsList.size(); i++) {
             T m = mItemsList.get(i);
@@ -140,6 +152,7 @@ public class GroupedList<T extends Titled> {
             h.getChildItemList().add(m);
             mItems2Headers.put(m,h);
         }
+        return mHeaders;
     }
 
     // binary search
@@ -187,7 +200,7 @@ public class GroupedList<T extends Titled> {
 
         void onClear();
 
-        void onDataSorted(List<Header<T2>> headers);
+        void onDataSorted(GroupedList<T2> gl);
 
         void onUngroupedItemsAdded(List<T2> items);
 

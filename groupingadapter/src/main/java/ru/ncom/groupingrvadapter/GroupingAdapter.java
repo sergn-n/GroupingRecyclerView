@@ -7,12 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 
 /**
  * Created by Serg on 11.09.2016.
@@ -35,7 +31,6 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     private final Class<T> mClass;
 
     private final List<Titled> mItemsList = new ArrayList<>();
-    private Map<T,Header<T>> mItems2Headers = new HashMap<>();
 
     private ArrayList<String> mCollapsedHeaders = null;
     private String mSortFieldName = null;
@@ -183,9 +178,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         }
     }
 
-
     private View.OnClickListener mCollapseExpandCL;
-
 
     /**
      * + creates {@link CollapseExpandClickListener} to be used in {@link #createHeaderViewHolder(int, int, ViewGroup)}.
@@ -215,7 +208,6 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     // ** Data manipulation **
 
-
     @Override
     public void onClear() {
         mItemsList.clear();
@@ -226,9 +218,10 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     public abstract ComparatorGrouper<T> getComparatorGrouper(String sortField) ;
 
     @Override
-    public void onDataSorted(List<Header<T>> headers) {
+    public void onDataSorted(GroupedList<T> gl) {
+        mSortFieldName = gl.getSortFieldName();
         mItemsList.clear();
-        for (Header<T> h: headers) {
+        for (Header<T> h: gl.getHeaders()) {
             mItemsList.add(h);
             for (T item: h.getChildItemList()) {
                 mItemsList.add(item);

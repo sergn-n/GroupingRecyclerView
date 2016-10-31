@@ -29,6 +29,7 @@ import java.util.List;
 
 import ru.ncom.groupingrvadapter.GroupedList;
 import ru.ncom.groupingrvadapter.GroupingAdapter;
+import ru.ncom.groupingrvadapter.Header;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
 
@@ -283,21 +284,21 @@ public class BaseActivity extends AppCompatActivity
     }
 
     @Override
-    public void onAsyncSortProgess(String msg) {
+    public void onAsyncSortProgress(String msg) {
         Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
                 .show();
     }
 
     @Override
-    public void onAsyncSortDone(String msg) {
+    public void onAsyncSortDone(GroupedList<Movie> glm) {
         mIsSortFinished = true;
         Log.d(TAG, "onAsyncSortDone: ");
-        Toast.makeText(getApplicationContext(),ASYNCSORT+msg,Toast.LENGTH_SHORT)
+        Toast.makeText(getApplicationContext(),ASYNCSORT+"Done",Toast.LENGTH_SHORT)
                 .show();
-        mAdapter.notifyDataSetChanged();
+        mAdapter.onDataSorted(glm);
         if (mSortSpinner.getSelectedItemPosition() >0 ) {
             String sortField = (String) mSortSpinner.getSelectedItem();
-            setGoSortEnabled(!sortField.equals(mAdapter.getSortField()));
+            setGoSortEnabled(!sortField.equals(glm.getSortFieldName()));
         }
     }
 

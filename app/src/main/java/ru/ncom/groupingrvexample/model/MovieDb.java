@@ -12,8 +12,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.ncom.groupingrvadapter.ComparatorGrouper;
 import ru.ncom.groupingrvadapter.GroupedList;
-import ru.ncom.groupingrvexample.adapter.MoviesAdapter;
+import ru.ncom.groupingrvadapter.Header;
 
 /**
  * Created by gerg on 05.09.2016.
@@ -177,15 +178,20 @@ public class MovieDb
              */
             ProgressListener getCurrentInstance();
             void onAsyncSortStart(String msg);
-            void onAsyncSortProgess(String msg);
-            void onAsyncSortDone(String msg);
+            void onAsyncSortProgress(String msg);
+
+            /**
+             *
+             * @param glm sorted list
+             */
+            void onAsyncSortDone(GroupedList<Movie> glm);
         }
 
-        GroupedList<Movie> ma;
+        GroupedList<Movie> mGlm;
         ProgressListener progressListener;
 
-        public AsyncDbSort(GroupedList<Movie> ma, ProgressListener progressListener ){
-            this.ma = ma;
+        public AsyncDbSort(GroupedList<Movie> glm, ProgressListener progressListener ){
+            this.mGlm = glm;
             this.progressListener = progressListener;
         }
 
@@ -199,7 +205,8 @@ public class MovieDb
                 //intentionally empty
             }
             //
-            ma.sort(params[0]);
+            mGlm.doSort(params[0]);
+
             publishProgress ("Sorted, notifying...");
             try {
                 Thread.sleep(7000);
@@ -222,13 +229,13 @@ public class MovieDb
         protected void onProgressUpdate(String... values) {
             // old instace really will do too, as listener only  shows a Toast
             super.onProgressUpdate(values);
-            progressListener.getCurrentInstance().onAsyncSortProgess(values[0]);
+            progressListener.getCurrentInstance().onAsyncSortProgress(values[0]);
         }
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            progressListener.getCurrentInstance().onAsyncSortDone(s);
+            progressListener.getCurrentInstance().onAsyncSortDone(mGlm);
         }
 
     }

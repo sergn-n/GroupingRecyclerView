@@ -9,7 +9,7 @@ android {
         minSdkVersion 14 //holo colors used
         targetSdkVersion 23
         versionCode 102019
-        versionName "1.02.019"
+        versionName "1.02.020"
     }
     buildTypes {
         release {
