@@ -6,10 +6,19 @@ import java.util.Comparator;
  *
  * @param <T>
  */
-public interface ComparatorGrouper<T>  extends Comparator<T> {
+public abstract class ComparatorGrouper<T>  implements Comparator<T> {
     /**
      * @param m
      * @return
      */
-    String getGroupTitle(T m) ;
+    public abstract String getGroupTitle(T m);
+
+    public abstract String getSortKey(T m);
+
+    @Override
+    public int compare(T lhs, T rhs) {
+        if (lhs.equals(rhs))
+            return 0;
+        else return getSortKey(lhs).compareTo(getSortKey(rhs));
+    }
 }

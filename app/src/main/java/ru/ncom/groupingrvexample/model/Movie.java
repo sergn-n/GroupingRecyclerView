@@ -65,11 +65,11 @@ public class Movie extends TitledSelectableItem implements Serializable {
     /**
      * Groups movies by the first letter of Title
      */
-    private static class MovieComparatorGrouperTitle implements ComparatorGrouper<Movie> {
+    private static class MovieComparatorGrouperTitle extends ComparatorGrouper<Movie> {
 
         @Override
-        public int compare(Movie lhs, Movie rhs) {
-            return lhs.getTitle().compareTo(rhs.getTitle());
+        public String getSortKey(Movie m) {
+            return m.getTitle();
         }
 
         @Override
@@ -81,11 +81,11 @@ public class Movie extends TitledSelectableItem implements Serializable {
     /**
      * Groups movies by the Genre
      */
-    private static class MovieComparatorGrouperGenre implements ComparatorGrouper<Movie> {
+    private static class MovieComparatorGrouperGenre extends ComparatorGrouper<Movie> {
 
         @Override
-        public int compare(Movie lhs, Movie rhs) {
-            return lhs.getGenre().compareTo(rhs.getGenre());
+        public String getSortKey(Movie m) {
+            return m.getGenre();
         }
 
         @Override
@@ -97,11 +97,11 @@ public class Movie extends TitledSelectableItem implements Serializable {
     /**
      * Groups movies by the decade based on Year
      */
-    private static class MovieComparatorGrouperYear implements ComparatorGrouper<Movie> {
+    private static class MovieComparatorGrouperYear extends ComparatorGrouper<Movie> {
 
         @Override
-        public int compare(Movie lhs, Movie rhs) {
-            return lhs.getYear().compareTo(rhs.getYear());
+        public String getSortKey(Movie m) {
+            return m.getYear();
         }
 
         public String getGroupTitle(Movie m) {
