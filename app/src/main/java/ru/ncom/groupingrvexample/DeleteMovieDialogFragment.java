@@ -16,8 +16,6 @@ public class DeleteMovieDialogFragment extends DialogFragment {
     public interface YesNoListener {
         void onDeleteYes(int position);
 
-        void onDeleteNo();
-
         void onDeleteDismiss();
     }
 
@@ -40,17 +38,17 @@ public class DeleteMovieDialogFragment extends DialogFragment {
     };
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setStyle(STYLE_NORMAL, 0);
-    }
-
-    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         if (!(activity instanceof YesNoListener)) {
             throw new ClassCastException(activity.toString() + " must implement YesNoListener");
         }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(STYLE_NORMAL, 0);
     }
 
     @Override
@@ -71,7 +69,7 @@ public class DeleteMovieDialogFragment extends DialogFragment {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ((YesNoListener) getActivity()).onDeleteNo();
+                        DeleteMovieDialogFragment.this.getDialog().cancel();
                     }
                 })
                 .create();

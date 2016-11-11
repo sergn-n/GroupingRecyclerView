@@ -41,7 +41,8 @@ import ru.ncom.groupingrvexample.model.MovieDb;
 // Grouping RecyclerView demo activity : Movies
 public class BaseActivity extends AppCompatActivity
         implements MovieDb.AsyncDbSort.ProgressListener,
-            DeleteMovieDialogFragment.YesNoListener {
+            DeleteMovieDialogFragment.YesNoListener,
+            AddMovieDialogFragment.YesNoListener{
 
     private final String TAG = "Base";
 
@@ -155,12 +156,15 @@ public class BaseActivity extends AppCompatActivity
             @Override
             public void onItemLongClick(View view, int position) {
                 Log.d(TAG, "onItemLongClick: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+                AddMovieDialogFragment amd = new AddMovieDialogFragment();
+                amd.show(getSupportFragmentManager(), "tagAddMovie");
             }
 
             @Override
             public void onItemZoomIn(View view, int position) {
                 Log.d(TAG, "onItemZoomIn: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
-                //TODO insert new Movie
+                AddMovieDialogFragment amd = new AddMovieDialogFragment();
+                amd.show(getSupportFragmentManager(), "tagAddMovie");
             }
 
             @Override
@@ -242,11 +246,6 @@ public class BaseActivity extends AppCompatActivity
     // ** DeleteMovieDialogFragment.YesNoListener members **
 
     @Override
-    public void onDeleteNo() {
-
-    }
-
-    @Override
     public void onDeleteYes(int position) {
 
         Log.d(TAG, "!! Gonna delete position =" + position);
@@ -265,6 +264,19 @@ public class BaseActivity extends AppCompatActivity
         // dismissed  by CANCEL/ OK + exec action / click outside the dialog
         Log.d(TAG, "Delete Dialog was dismissed by user action on it.");
         mDeleteInProgress = false;
+    }
+
+    // ** AddMovieDialogFragment.YesNoListener members **
+
+    @Override
+    public void onAddYes(String title, String genre, String year) {
+        Movie m = new Movie(title, genre, year);
+        try {
+            mMovieDb.add(m);
+            mGroupedMovies.add(m);
+        } catch (IOException e) {
+            Log.e(TAG, "!!FAILED to add movie : " + title, e);
+        }
     }
 
     // ** MoviesAdapter.AsyncDbSort.ProgressListener members **

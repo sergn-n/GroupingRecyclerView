@@ -4,4 +4,9 @@
 
     <string name="delete_movie_dialog_title">Delete this movie</string>
     <string name="delete_movie_dialog_message">Title:%1$s (%2$s), %3$s</string>
+
+    <string name="movie_dialog_title">New movie</string>
+    <string name="movie_title">Title:</string>
+    <string name="movie_genre">Genre:</string>
+    <string name="movie_year">Year:</string>
 </resources>

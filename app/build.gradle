@@ -8,8 +8,8 @@ android {
         applicationId "ru.ncom.groupingrecyclerview"
         minSdkVersion 14 //holo colors used
         targetSdkVersion 23
-        versionCode 102019
-        versionName "1.02.020"
+        versionCode 103021
+        versionName "1.03.021"
     }
     buildTypes {
         release {
@@ -27,4 +27,5 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.1.1'
     compile project(":groupingadapter")
     //compile 'com.google.guava:guava:19.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha9'
 }
