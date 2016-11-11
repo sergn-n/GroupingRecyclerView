@@ -174,15 +174,22 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
             mCollapsedHeaders = null;
             // toggle collapse
             Header<T> h = (Header<T>) itm;
+            int hpos = Arrays.binarySearch(mHeader2Item, headerPosition);
             int childListItemCount;
             if (h.isCollapsed()) {
                 childListItemCount = expandHeader(h, headerPosition);
-                if (childListItemCount > 0)
+                if (childListItemCount > 0) {
+                    for (int i = hpos + 1; i < mHeader2Item.length; i++)
+                        mHeader2Item[i] += childListItemCount;
                     notifyItemRangeInserted(headerPosition + 1, childListItemCount);
+                }
             } else {
                 childListItemCount = collapseHeader(h, headerPosition);
-                if (childListItemCount > 0)
+                if (childListItemCount > 0) {
+                    for (int i = hpos + 1; i < mHeader2Item.length; i++)
+                        mHeader2Item[i] -= childListItemCount;
                     notifyItemRangeRemoved(headerPosition + 1, childListItemCount);
+                }
             }
             // isSelected() changed anyway
             notifyItemChanged(headerPosition);
@@ -246,14 +253,16 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     @Override
     public void onGroupedItemAdded(int hpos, T item, int pos) {
         Header<T> h = (Header<T>)mItemsList.get( mHeader2Item[hpos]);
-        if (h.isCollapsed())
-            return;
-        pos = mHeader2Item[hpos] + pos + 1;
-        mItemsList.add(pos, item);
-        // shift tail of idx by 1
-        for (int i = hpos+1; i<mHeader2Item.length; i++)
-            mHeader2Item[i]++;
-        notifyItemInserted(pos);
+        if (!h.isCollapsed()) {
+            pos = mHeader2Item[hpos] + pos + 1;
+            mItemsList.add(pos, item);
+            // shift tail of idx by 1
+            for (int i = hpos + 1; i < mHeader2Item.length; i++)
+                mHeader2Item[i]++;
+            notifyItemInserted(pos);
+        }
+        // update header's count of items
+        notifyItemChanged(mHeader2Item[hpos]);
     }
 
     @Override

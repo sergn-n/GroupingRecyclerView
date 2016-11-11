@@ -25,13 +25,13 @@ public class GroupedList<T extends Titled> {
         return mCallback;
     }
 
-
     // current sort field
     private String mSortFieldName = null;
     public String getSortFieldName() {
         return mSortFieldName;
     }
 
+    // unsorted, original order
     private final List<T> mItemsList = new ArrayList<>();
 
     private Map<T,Header<T>> mItems2Headers = new HashMap<>();
@@ -40,8 +40,6 @@ public class GroupedList<T extends Titled> {
     public List<Header<T>> getHeaders() {
         return mHeaders;
     }
-
-
 
     public GroupedList(Class<T> clazz, Callback<T> cb) {
         this.mClass = clazz;
@@ -58,7 +56,7 @@ public class GroupedList<T extends Titled> {
     /**
      *
      */
-    private void add(T item) {
+    public void add(T item) {
         mItemsList.add(item);
         if (mSortFieldName == null) {
             List<T> newItems = new ArrayList<>(1);
@@ -66,7 +64,7 @@ public class GroupedList<T extends Titled> {
             mCallback.onUngroupedItemsAdded(newItems);
             return;
         }
-        //TODO sorted list
+        // sorted list
         ComparatorGrouper cg = mCallback.getComparatorGrouper(mSortFieldName);
         String myGroupTitle = cg.getGroupTitle(item);
         BSearchResult bsrH = findIndexOf(myGroupTitle, (List<Titled>)(List<?>)mHeaders, 0, mHeaders.size()-1);
@@ -74,12 +72,11 @@ public class GroupedList<T extends Titled> {
         if (bsrH.isFound()) {
             // found exact header
             h = mHeaders.get(bsrH.left);
-            List<Titled> children = (List<Titled>)(List<?>)h.getChildItemList();
-            BSearchResult bsrC = findIndexOf(item.getTitle(), children, 0, h.getChildItemList().size()-1);
-            int pos = (bsrC.left == OPENINTERVAL) ? 0 : bsrC.left + 1;
+            List<T> children = (List<T>)(List<?>)h.getChildItemList();
+            BSearchResult bsrC = findIndexOf(item, children, 0, children.size()-1);
+            int pos = bsrC.right == OPENINTERVAL ? children.size() : bsrC.right;
             children.add(pos, item);
             mCallback.onGroupedItemAdded(bsrH.left, item, pos);
-
         }
         else {
             // add new header
@@ -89,7 +86,6 @@ public class GroupedList<T extends Titled> {
             mHeaders.add(pos, h);
             mCallback.onHeaderAdded(h,pos);
         }
-
     }
 
     public void addAll(List<T> items) {
@@ -167,7 +163,7 @@ public class GroupedList<T extends Titled> {
             Collections.sort(mItemsList, cg);
         Header<T> h = new Header<>(cg.getGroupTitle(mItemsList.get(0)));
         mHeaders.add(h);
-        for (int i = 1; i < mItemsList.size(); i++) {
+        for (int i = 0; i < mItemsList.size(); i++) {
             T m = mItemsList.get(i);
             String newTitle = cg.getGroupTitle(m);
             if (!newTitle.equals(h.getTitle())) {
@@ -209,6 +205,28 @@ public class GroupedList<T extends Titled> {
             final int middle = (left + right) / 2;
             Titled myItem = titledList.get(middle);
             final int cmp = myItem.getTitle().compareTo(title);
+            if (cmp < 0) {
+                bsr.left = middle;
+                left = middle + 1;
+            } else if (cmp == 0) {
+                bsr.left = middle;
+                bsr.right= middle;
+                return bsr;
+            } else {
+                bsr.right = middle;
+                right = middle - 1;
+            }
+        }
+        return bsr;
+    }
+
+    private BSearchResult findIndexOf(T item, List<T> titledList, int left, int right) {
+        BSearchResult bsr = new BSearchResult();
+        ComparatorGrouper<T> cg = mCallback.getComparatorGrouper(mSortFieldName);
+        while (left <= right) {
+            final int middle = (left + right) / 2;
+            T myItem = titledList.get(middle);
+            final int cmp = cg.compare(myItem, item);
             if (cmp < 0) {
                 bsr.left = middle;
                 left = middle + 1;
