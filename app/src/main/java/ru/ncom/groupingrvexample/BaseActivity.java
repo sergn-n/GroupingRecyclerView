@@ -142,8 +142,8 @@ public class BaseActivity extends AppCompatActivity
                 // This titles may differ when:
                 // 1) adapter is not synchronized with rv when doing async sort;
                 // 2) GroupingAdapter#onBindViewHolder adds number of items in group to the title.
-                TitledViewHolder mvh = (TitledViewHolder) mGroupingRecyclerView.getChildViewHolder(view);
-                String viewTitle = (String)mvh.getTitleView().getText();
+                TitledViewHolder tvh = (TitledViewHolder) mGroupingRecyclerView.getChildViewHolder(view);
+                String viewTitle = (String)tvh.getTitleView().getText();
                 Titled movie = mAdapter.getAt(position);
                 String adapterTitle = movie.getTitle();
                 Toast.makeText(getApplicationContext()
@@ -151,11 +151,21 @@ public class BaseActivity extends AppCompatActivity
                                 ? adapterTitle + " is selected!"
                                 : "Adapter and view titles are different: \n" + adapterTitle + "\n" + viewTitle
                         , Toast.LENGTH_SHORT).show();
+                // delete movie (for emulator with no gesture emulation)
+                if (mGroupingRecyclerView.getChildViewHolder(view) instanceof MovieViewHolder) {
+                    MovieViewHolder mvh = (MovieViewHolder) mGroupingRecyclerView.getChildViewHolder(view);
+                    String msg = String.format(getString(R.string.delete_movie_dialog_message),
+                            mvh.title.getText(), mvh.genre.getText(), mvh.year.getText());
+                    DeleteMovieDialogFragment.createInstance(msg, position)
+                            .show(getSupportFragmentManager(), "tagDeleteMovie");
+                }
+
             }
 
             @Override
             public void onItemLongClick(View view, int position) {
                 Log.d(TAG, "onItemLongClick: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+                // add movie (for emulator with no gesture emulation)
                 AddMovieDialogFragment amd = new AddMovieDialogFragment();
                 amd.show(getSupportFragmentManager(), "tagAddMovie");
             }
