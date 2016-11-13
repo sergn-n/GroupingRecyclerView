@@ -47,6 +47,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     }
 
     private int[] mHeader2Item;
+    private int mHeader2ItemSize = 0;
 
     public GroupingAdapter(Class<T> clazz) {
         this.mClass = clazz;
@@ -174,19 +175,19 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
             mCollapsedHeaders = null;
             // toggle collapse
             Header<T> h = (Header<T>) itm;
-            int hpos = Arrays.binarySearch(mHeader2Item, headerPosition);
+            int hpos = Arrays.binarySearch(mHeader2Item, 0, mHeader2ItemSize, headerPosition);
             int childListItemCount;
             if (h.isCollapsed()) {
                 childListItemCount = expandHeader(h, headerPosition);
                 if (childListItemCount > 0) {
-                    for (int i = hpos + 1; i < mHeader2Item.length; i++)
+                    for (int i = hpos + 1; i < mHeader2ItemSize; i++)
                         mHeader2Item[i] += childListItemCount;
                     notifyItemRangeInserted(headerPosition + 1, childListItemCount);
                 }
             } else {
                 childListItemCount = collapseHeader(h, headerPosition);
                 if (childListItemCount > 0) {
-                    for (int i = hpos + 1; i < mHeader2Item.length; i++)
+                    for (int i = hpos + 1; i < mHeader2ItemSize; i++)
                         mHeader2Item[i] -= childListItemCount;
                     notifyItemRangeRemoved(headerPosition + 1, childListItemCount);
                 }
@@ -236,10 +237,11 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     @Override
     public void onDataSorted(GroupedList<T> gl) {
-        mHeader2Item = new int[gl.getHeaders().size()];
-        int hIdx = 0;
+        mHeader2ItemSize = gl.getHeaders().size();
+        mHeader2Item = new int[mHeader2ItemSize + 12];
         mSortFieldName = gl.getSortFieldName();
         mItemsList.clear();
+        int hIdx = 0;
         for (Header<T> h: gl.getHeaders()) {
             mItemsList.add(h);
             mHeader2Item[hIdx++] = mItemsList.size() - 1;
@@ -252,61 +254,98 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     @Override
     public void onGroupedItemAdded(int hpos, T item, int pos) {
-        Header<T> h = (Header<T>)mItemsList.get( mHeader2Item[hpos]);
+        int tpos = mHeader2Item[hpos];
+        Header<T> h = (Header<T>)mItemsList.get(tpos);
         if (!h.isCollapsed()) {
-            pos = mHeader2Item[hpos] + pos + 1;
+            pos = tpos + pos + 1;
             mItemsList.add(pos, item);
-            // shift tail of idx by 1
-            for (int i = hpos + 1; i < mHeader2Item.length; i++)
+            // Adjust tail of index by +1
+            for (int i = hpos + 1; i < mHeader2ItemSize; i++)
                 mHeader2Item[i]++;
             notifyItemInserted(pos);
         }
         // update header's count of items
-        notifyItemChanged(mHeader2Item[hpos]);
+        notifyItemChanged(tpos);
     }
 
     @Override
     public void onUngroupedItemsAdded(List<T> items) {
         int pos = mItemsList.size();
         mItemsList.addAll(items);
-                notifyItemRangeInserted(pos, items.size());
+        notifyItemRangeInserted(pos, items.size());
     }
 
     @Override
     public void onHeaderAdded(Header<T> h, int pos){
-        int[] a = new int[mHeader2Item.length + 1];
-        // copy head of index
-        System.arraycopy(mHeader2Item,0,a,0,pos);
-        // add items
-        a[pos] = (pos < mHeader2Item.length)
-                ? mHeader2Item[pos]  // index of current header at pos
-                : mItemsList.size(); // end of the items
-        mItemsList.add(a[pos], h);
-        List<T> childs =  h.getChildItemList();
-        for (int j = 0; j < childs.size(); j++) {
-            mItemsList.add(a[pos] + j + 1, childs.get(j));
+        List<T> children = h.getChildItemList();
+        int shift = children.size() + 1;
+
+        // Update mHeader2Item index
+        int[] a;
+        if (mHeader2ItemSize == mHeader2Item.length){
+            a = new int[mHeader2ItemSize + 12];
+            // copy head of index
+            System.arraycopy(mHeader2Item,0,a,0,pos);
+        }
+        else {
+            // assert mHeader2ItemSize < mHeader2Item.length
+            a = mHeader2Item;
         }
         // copy tail of idx adding shift
-        int shift = childs.size() + 1;
-        for (int i = pos+1; i<a.length; i++)
+        for (int i =  mHeader2ItemSize; i > pos; i--)
             a[i] = mHeader2Item[i-1] + shift;
-        //
+        // set new header pos
+        a[pos] = (pos < mHeader2ItemSize)
+                ? mHeader2Item[pos]  // index of current header at pos
+                : mItemsList.size(); // end of the items
+        mHeader2ItemSize++;
         mHeader2Item = a;
+
+        // Add items
+        mItemsList.add(mHeader2Item[pos], h);
+        for (int j = 0; j < children.size(); j++) {
+            mItemsList.add(mHeader2Item[pos] + j + 1, children.get(j));
+        }
         notifyItemRangeInserted(mHeader2Item[pos], shift);
     }
 
     @Override
-    public void onHeaderRemoved(Header h) {
-
+    public void onHeaderRemoved(int hpos) {
+        int pos = mHeader2Item[hpos];
+        // number of items to delete
+        int shift = (hpos < mHeader2ItemSize - 1
+                ? mHeader2Item[hpos + 1]
+                : mItemsList.size()) - pos;
+        // Remove items
+        for (int j = 1; j <= shift; j++) {
+            mItemsList.remove(pos + shift - j);
+        }
+        // Copy index tail with shift
+        for (int i = hpos ; i < mHeader2ItemSize - 1; i++)
+            mHeader2Item[i] = mHeader2Item[i + 1] - shift;
+        mHeader2ItemSize--;
+        notifyItemRangeRemoved(pos, shift);
     }
 
     @Override
-    public void onGroupedItemRemoved(Header h, int tpos) {
-
+    public void onGroupedItemRemoved(int hpos, int pos) {
+        int tpos = mHeader2Item[hpos];
+        Header<T> h = (Header<T>)mItemsList.get(tpos);
+        if (!h.isCollapsed()) {
+            pos = tpos + pos + 1;
+            mItemsList.remove(pos);
+            // Adjust index tail by -1
+            for (int i = hpos + 1; i < mHeader2ItemSize; i++)
+                mHeader2Item[i]--;
+            notifyItemRemoved(pos);
+        }
+        // update header's count of items
+        notifyItemChanged(tpos);
     }
 
     @Override
-    public void onUngroupedItemRemoved(int tpos) {
-
+    public void onUngroupedItemRemoved(int pos) {
+        mItemsList.remove(pos);
+        notifyItemRemoved(pos);
     }
 }

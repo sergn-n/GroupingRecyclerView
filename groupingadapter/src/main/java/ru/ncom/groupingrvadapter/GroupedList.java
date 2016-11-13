@@ -1,6 +1,7 @@
 package ru.ncom.groupingrvadapter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,17 +26,19 @@ public class GroupedList<T extends Titled> {
         return mCallback;
     }
 
-    // current sort field
+    // Current sort field
     private String mSortFieldName = null;
     public String getSortFieldName() {
         return mSortFieldName;
     }
 
-    // unsorted, original order
+    // Unsorted list, original order
     private final List<T> mItemsList = new ArrayList<>();
 
+    // Sorted item to group header map
     private Map<T,Header<T>> mItems2Headers = new HashMap<>();
 
+    // Group headers
     private final List<Header<T>> mHeaders = new ArrayList<>();
     public List<Header<T>> getHeaders() {
         return mHeaders;
@@ -50,41 +53,45 @@ public class GroupedList<T extends Titled> {
         mItemsList.clear();
         mItems2Headers.clear();
         mHeaders.clear();
-        mCallback.onClear();
+        if (mCallback != null)
+            mCallback.onClear();
     }
 
-    /**
-     *
-     */
     public void add(T item) {
         mItemsList.add(item);
         if (mSortFieldName == null) {
+            // List isn't sorted
             List<T> newItems = new ArrayList<>(1);
             newItems.add(item);
-            mCallback.onUngroupedItemsAdded(newItems);
+            if (mCallback != null)
+                mCallback.onUngroupedItemsAdded(newItems);
             return;
         }
-        // sorted list
+        // Add to sorted list
+        if (mCallback == null)
+            throw new IllegalArgumentException("No callback specified, can't get ComparatorGrouper.");
         ComparatorGrouper cg = mCallback.getComparatorGrouper(mSortFieldName);
         String myGroupTitle = cg.getGroupTitle(item);
-        BSearchResult bsrH = findIndexOf(myGroupTitle, (List<Titled>)(List<?>)mHeaders, 0, mHeaders.size()-1);
+        int hpos = binarySearch(myGroupTitle, mHeaders);
         Header<T> h;
-        if (bsrH.isFound()) {
-            // found exact header
-            h = mHeaders.get(bsrH.left);
-            List<T> children = (List<T>)(List<?>)h.getChildItemList();
-            BSearchResult bsrC = findIndexOf(item, children, 0, children.size()-1);
-            int pos = bsrC.right == OPENINTERVAL ? children.size() : bsrC.right;
+        if (hpos >= 0) {
+            // found the group new item belongs to
+            h = mHeaders.get(hpos);
+            List<T> children = h.getChildItemList();
+            int pos = Arrays.binarySearch(children.toArray(), item, cg);
+            if (pos < 0)
+                pos = -1 - pos;
             children.add(pos, item);
-            mCallback.onGroupedItemAdded(bsrH.left, item, pos);
+            mItems2Headers.put(item, h);
+            mCallback.onGroupedItemAdded(hpos, item, pos);
         }
         else {
-            // add new header
+            // add new header with item
             h = new Header<T>(myGroupTitle);
+            mHeaders.add(-1 - hpos, h);
             h.getChildItemList().add(item);
-            int pos = (bsrH.left == OPENINTERVAL) ? 0 : bsrH.left + 1;
-            mHeaders.add(pos, h);
-            mCallback.onHeaderAdded(h,pos);
+            mItems2Headers.put(item, h);
+            mCallback.onHeaderAdded(h, -1 - hpos);
         }
     }
 
@@ -94,16 +101,19 @@ public class GroupedList<T extends Titled> {
         }
         if (mSortFieldName == null) {
             mItemsList.addAll(items);
-            mCallback.onUngroupedItemsAdded(items);
+            if (mCallback != null)
+                mCallback.onUngroupedItemsAdded(items);
             return;
         }
-        GroupedList<T> newItems = new GroupedList<T>(mClass,null);
+        // doSort() uses only getComparatorGrouper() method of callback,
+        // no calls of on<Event>() methods
+        GroupedList<T> newItems = new GroupedList<T>(mClass, mCallback);
         newItems.addAll(items);
         newItems.doSort(mSortFieldName);
         merge(newItems);
     }
 
-    private void merge( GroupedList<T> newItems) {
+    private void merge(GroupedList<T> newItems) {
         //TODO
         throw new UnsupportedOperationException("Not implemented yet.");
     }
@@ -124,21 +134,26 @@ public class GroupedList<T extends Titled> {
         // Remove from main
         mItemsList.remove(tpos);
 
-        Header<T> h = mItems2Headers.get(item);
-        if (h != null){ // sorted
-            mItems2Headers.remove(item);
-            if (h.getChildItemList().size() == 1) {
-                // the only item in group, remove the entire header
-                mHeaders.remove(h);
-                mCallback.onHeaderRemoved(h);
-            } else {
-                tpos = h.getChildItemList().indexOf(item);
-                h.getChildItemList().remove(tpos);
-                mCallback.onGroupedItemRemoved(h, tpos);
-            }
+        if (mSortFieldName == null) {
+            // unsorted list
+            if (mCallback != null)
+                mCallback.onUngroupedItemRemoved(tpos);
+            return true;
         }
-        else {
-            mCallback.onUngroupedItemRemoved(tpos);
+        // sorted list
+        Header<T> h = mItems2Headers.get(item);
+        mItems2Headers.remove(item);
+        int hpos = mHeaders.indexOf(h);
+        if (h.getChildItemList().size() == 1) {
+            // the only item in group, remove the entire header
+            mHeaders.remove(h);
+            if (mCallback != null)
+                mCallback.onHeaderRemoved(hpos);
+        } else {
+            tpos = h.getChildItemList().indexOf(item);
+            h.getChildItemList().remove(tpos);
+            if (mCallback != null)
+                mCallback.onGroupedItemRemoved(hpos, tpos);
         }
         return true;
     }
@@ -148,7 +163,8 @@ public class GroupedList<T extends Titled> {
      */
     public void sort(String sortField) {
         doSort(sortField);
-        mCallback.onDataSorted(this);
+        if (mCallback != null)
+            mCallback.onDataSorted(this);
     }
 
     public List<Header<T>> doSort(String sortField) {
@@ -158,6 +174,8 @@ public class GroupedList<T extends Titled> {
         if (mItemsList.size() == 0)
             return mHeaders;
 
+        if (mCallback == null)
+            throw new IllegalArgumentException("No callback specified, can't get ComparatorGrouper.");
         ComparatorGrouper cg = mCallback.getComparatorGrouper(sortField);
         if (mItemsList.size() > 1)
             Collections.sort(mItemsList, cg);
@@ -179,69 +197,31 @@ public class GroupedList<T extends Titled> {
         return mHeaders;
     }
 
-    // binary search
-
-    private final int OPENINTERVAL =-1;
-    private class BSearchResult {
-        public int left = OPENINTERVAL;
-        public int right = OPENINTERVAL;
-        public boolean isFound(){
-            return (left==right && left!= OPENINTERVAL);
-        }
-
-    }
-
     /**
-     *  Returns interval (left right), may be open.
+     *
      * @param title
-     * @param titledList
-     * @param left
-     * @param right
+     * @param headers
      * @return
      */
-    private BSearchResult findIndexOf(String title, List<Titled> titledList, int left, int right) {
-        BSearchResult bsr = new BSearchResult();
+    private int binarySearch(String title, List<Header<T>> headers) {
+        int left = 0;
+        int right = headers.size() - 1;
+        int middle = 0;
+        int cmp = 1;
         while (left <= right) {
-            final int middle = (left + right) / 2;
-            Titled myItem = titledList.get(middle);
-            final int cmp = myItem.getTitle().compareTo(title);
+            middle = (left + right) / 2;
+            Titled myItem = headers.get(middle);
+            cmp = myItem.getTitle().compareTo(title);
             if (cmp < 0) {
-                bsr.left = middle;
                 left = middle + 1;
             } else if (cmp == 0) {
-                bsr.left = middle;
-                bsr.right= middle;
-                return bsr;
+                return middle;
             } else {
-                bsr.right = middle;
                 right = middle - 1;
             }
         }
-        return bsr;
+        return -middle - (cmp > 0 ? 1 : 2);
     }
-
-    private BSearchResult findIndexOf(T item, List<T> titledList, int left, int right) {
-        BSearchResult bsr = new BSearchResult();
-        ComparatorGrouper<T> cg = mCallback.getComparatorGrouper(mSortFieldName);
-        while (left <= right) {
-            final int middle = (left + right) / 2;
-            T myItem = titledList.get(middle);
-            final int cmp = cg.compare(myItem, item);
-            if (cmp < 0) {
-                bsr.left = middle;
-                left = middle + 1;
-            } else if (cmp == 0) {
-                bsr.left = middle;
-                bsr.right= middle;
-                return bsr;
-            } else {
-                bsr.right = middle;
-                right = middle - 1;
-            }
-        }
-        return bsr;
-    }
-
 
     public interface Callback<T2 extends Titled>{
 
@@ -257,14 +237,14 @@ public class GroupedList<T extends Titled> {
 
         void onHeaderAdded(Header<T2> h, int pos);
 
-        void onHeaderRemoved(Header<T2> h);
+        void onHeaderRemoved(int hpos);
 
         /**
          *
-         * @param h header of the removed item
+         * @param hpos position of the header of the removed item
          * @param tpos position within the header
          */
-        void onGroupedItemRemoved(Header<T2> h, int tpos);
+        void onGroupedItemRemoved(int hpos, int tpos);
 
         void onUngroupedItemRemoved(int tpos);
 
