@@ -99,24 +99,57 @@ public class GroupedList<T extends Titled> {
         if (items.size() == 0) {
             return;
         }
+        mItemsList.addAll(items);
+
         if (mSortFieldName == null) {
-            mItemsList.addAll(items);
             if (mCallback != null)
                 mCallback.onUngroupedItemsAdded(items);
             return;
         }
+
         // doSort() uses only getComparatorGrouper() method of callback,
         // no calls of on<Event>() methods
         GroupedList<T> newItems = new GroupedList<T>(mClass, mCallback);
         newItems.addAll(items);
         newItems.doSort(mSortFieldName);
         merge(newItems);
+        mCallback.onDataSorted(this);
     }
 
-    private void merge(GroupedList<T> newItems) {
+    private void merge(GroupedList<T> newItemList) {
         //TODO
-        throw new UnsupportedOperationException("Not implemented yet.");
+        List<Header<T>> newHeaders = newItemList.getHeaders();
+        ComparatorGrouper cg = mCallback.getComparatorGrouper(mSortFieldName);
+        for (int i = 0; i < newHeaders.size(); i++){
+            Header<T> newH = newHeaders.get(i);
+            List<T> newChildren = newH.getChildItemList();
+            String newHTitle = newHeaders.get(i).getTitle();
+            int hpos = binarySearch(newHTitle, mHeaders);
+            if (hpos >= 0) {
+                // merge items, take no care of doubles
+                Header<T> h = mHeaders.get(hpos);
+                List<T> children = h.getChildItemList();
+                //TODO is 2 lists -> array  -> sort -> list better (perfomance)?
+                Object[] ca = children.toArray();
+                for (int j = 0; j < newChildren.size(); j++) {
+                    T itm = newChildren.get(j);
+                    int tpos = Arrays.binarySearch(ca, itm, cg);
+                    if (tpos < 0)
+                        tpos = -1 - tpos;
+                    children.add(tpos, itm);
+                    mItems2Headers.put(itm, h);
+                }
+            }
+            else {
+                // add new header
+                mHeaders.add(-1 - hpos, newH);
+                for (int j = 0; j < newChildren.size(); j++) {
+                    mItems2Headers.put(newChildren.get(j), newH);
+                }
+            }
+        }
     }
+
     /**
      * Adds the given items to the list. Does not modify the input.
      */
