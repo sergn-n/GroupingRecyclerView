@@ -53,6 +53,5 @@ public class WorkerFragment extends Fragment {
         mMovieDb = new MovieDb(appCtx);
         mMoviesAdapter = new MoviesAdapter();
         mGroupedMovies = new GroupedList<>(Movie.class, mMoviesAdapter);
-        mGroupedMovies.addAll(mMovieDb.getDataList());
     }
 }

@@ -210,6 +210,10 @@ public class BaseActivity extends AppCompatActivity
         mGroupedMovies = mWorker.getmGroupedMovies();
         // Link newly created mGroupingRecyclerView and retaining mAdapter
         mGroupingRecyclerView.setAdapter(mAdapter);
+        // Test merge()
+        mGroupedMovies.add (new Movie ("Start M","Fiction","1951"));
+        mGroupedMovies.sort(Movie.getOrderByFields().get(1));
+        mGroupedMovies.addAll(mMovieDb.getDataList());
     }
 
     @Override
