@@ -19,7 +19,7 @@ public class AddMovieDialogFragment extends DialogFragment {
     public interface YesNoListener {
         void onAddYes(String title, String genre, String year);
 
-        //void onAddDismiss();
+        void onAddDismiss();
     }
 
 
@@ -66,5 +66,13 @@ public class AddMovieDialogFragment extends DialogFragment {
                     }
                 });
         return builder.create();
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        // No actvity when config change
+        if (getActivity()!= null)
+            ((AddMovieDialogFragment.YesNoListener) getActivity()).onAddDismiss();
     }
 }

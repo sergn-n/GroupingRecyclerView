@@ -29,7 +29,6 @@ import java.util.List;
 
 import ru.ncom.groupingrvadapter.GroupedList;
 import ru.ncom.groupingrvadapter.GroupingAdapter;
-import ru.ncom.groupingrvadapter.Header;
 import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
 
@@ -60,7 +59,7 @@ public class BaseActivity extends AppCompatActivity
     private MenuItem mGoSort;
     private final String ISSORTFINISHED = "ISSORTFINISHED";
     private boolean mIsSortFinished = true;
-    private boolean mDeleteInProgress = false;
+    private boolean mDataActionInProgress = false;
 
     // Holds db across activity lifecycle
     //TODO use it to hold the state of controls and tasks instead of bundle?
@@ -173,17 +172,23 @@ public class BaseActivity extends AppCompatActivity
             @Override
             public void onItemZoomIn(View view, int position) {
                 Log.d(TAG, "onItemZoomIn: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
-                AddMovieDialogFragment amd = new AddMovieDialogFragment();
-                amd.show(getSupportFragmentManager(), "tagAddMovie");
+                if ((!mDataActionInProgress)
+                        && (mIsSortFinished) // rv is sync. with adapter
+                        && mAdapter.getItemViewType(position) == GroupingAdapter.DATAROW) {
+                    mDataActionInProgress = true;
+                    Log.d(TAG, "onItemZoomIn: Creating Movie dialog..");
+                    AddMovieDialogFragment amd = new AddMovieDialogFragment();
+                    amd.show(getSupportFragmentManager(), "tagAddMovie");
+                }
             }
 
             @Override
             public void onItemZoomOut(View view, int position) {
                 Log.d(TAG, "onItemZoomOut: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
-                if ((!mDeleteInProgress)  //TODO Check no any data operation, not only delete
+                if ((!mDataActionInProgress)
                         && (mIsSortFinished) // rv is sync. with adapter
                         && mAdapter.getItemViewType(position) == GroupingAdapter.DATAROW) {
-                    mDeleteInProgress = true;
+                    mDataActionInProgress = true;
                     Log.d(TAG, "onItemZoomOut: Creating delete dialog..");
                     MovieViewHolder mvh = (MovieViewHolder)mGroupingRecyclerView.getChildViewHolder(view);
                     String msg = String.format(getString(R.string.delete_movie_dialog_message),
@@ -273,7 +278,7 @@ public class BaseActivity extends AppCompatActivity
     public void onDeleteDismiss() {
         // dismissed  by CANCEL/ OK + exec action / click outside the dialog
         Log.d(TAG, "Delete Dialog was dismissed by user action on it.");
-        mDeleteInProgress = false;
+        mDataActionInProgress = false;
     }
 
     // ** AddMovieDialogFragment.YesNoListener members **
@@ -287,6 +292,13 @@ public class BaseActivity extends AppCompatActivity
         } catch (IOException e) {
             Log.e(TAG, "!!FAILED to add movie : " + title, e);
         }
+    }
+
+    @Override
+    public void onAddDismiss() {
+        // dismissed  by CANCEL/ OK + exec action / click outside the dialog
+        Log.d(TAG, "Movie Dialog was dismissed by user action on it.");
+        mDataActionInProgress = false;
     }
 
     // ** MoviesAdapter.AsyncDbSort.ProgressListener members **
