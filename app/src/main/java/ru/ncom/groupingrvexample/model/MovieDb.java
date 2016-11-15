@@ -85,13 +85,18 @@ public class MovieDb
         movie = new Movie("Guardians of the Galaxy", "Science Fiction & Fantasy", "2014");
         movieList.add(movie);
 
+        try {
+            save();
+            Log.d(TAG, "Generated and saved to " + FILENAME);
+        } catch (Exception ex) {
+            Log.e(TAG, "Failed to save to " + FILENAME, ex);
+        }
     }
 
     private void read() throws IOException, ClassNotFoundException {
         FileInputStream fin = mContext.openFileInput(FILENAME);
         ObjectInputStream ois = new ObjectInputStream(fin);
         movieList = (ArrayList<Movie>)ois.readObject();
-        //Movie m = (Movie)ois.readObject();
         fin.close();
     }
 
@@ -123,21 +128,16 @@ public class MovieDb
     }
 
     public List<Movie> getDataList() {
-        if (movieList==null) {
+        if (movieList==null || movieList.size() == 0) {
             try {
                 read();
                 Log.d(TAG, "Read from " + FILENAME);
             } catch (Exception e) {
                 // no file to read, generate data and save.
                 generate();
-                try {
-                    save();
-                    Log.d(TAG, "Generated and saved to " + FILENAME);
-                } catch (Exception ex) {
-                    Log.e(TAG, "Failed to save to " + FILENAME, ex);
-                }
             }
-
+            if (movieList.size() == 0) // empty file
+                generate();
         }
         return movieList;
     }
