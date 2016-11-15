@@ -132,8 +132,8 @@ public class BaseActivity extends AppCompatActivity
         // If a listener is also set for a TextView of the row in adapter / viewholder,
         // Toast from this listener's onItemClick() appears first, then from TextView listener
         mGroupingRecyclerView.addOnItemTouchListener(new OnMovieTouchListener(getApplicationContext(), mGroupingRecyclerView
-                , new OnMovieTouchListener.ClickListener() {
-            private final static String TAG = "ClickListener(Main)";
+                , new OnMovieTouchListener.GestureListener() {
+            private final static String TAG = "GestureListener(Main)";
 
             @Override
             public void onItemClick(View view, int position) {
@@ -151,13 +151,7 @@ public class BaseActivity extends AppCompatActivity
                                 : "Adapter and view titles are different: \n" + adapterTitle + "\n" + viewTitle
                         , Toast.LENGTH_SHORT).show();
                 // delete movie (for emulator with no gesture emulation)
-                if (mGroupingRecyclerView.getChildViewHolder(view) instanceof MovieViewHolder) {
-                    MovieViewHolder mvh = (MovieViewHolder) mGroupingRecyclerView.getChildViewHolder(view);
-                    String msg = String.format(getString(R.string.delete_movie_dialog_message),
-                            mvh.title.getText(), mvh.genre.getText(), mvh.year.getText());
-                    DeleteMovieDialogFragment.createInstance(msg, position)
-                            .show(getSupportFragmentManager(), "tagDeleteMovie");
-                }
+                showDeleteDialog(view, position);
 
             }
 
@@ -165,35 +159,40 @@ public class BaseActivity extends AppCompatActivity
             public void onItemLongClick(View view, int position) {
                 Log.d(TAG, "onItemLongClick: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
                 // add movie (for emulator with no gesture emulation)
-                AddMovieDialogFragment amd = new AddMovieDialogFragment();
-                amd.show(getSupportFragmentManager(), "tagAddMovie");
+                showMovieDialog(position);
             }
 
             @Override
             public void onItemZoomIn(View view, int position) {
                 Log.d(TAG, "onItemZoomIn: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
-                if ((!mDataActionInProgress)
-                        && (mIsSortFinished) // rv is sync. with adapter
-                        && mAdapter.getItemViewType(position) == GroupingAdapter.DATAROW) {
-                    mDataActionInProgress = true;
-                    Log.d(TAG, "onItemZoomIn: Creating Movie dialog..");
-                    AddMovieDialogFragment amd = new AddMovieDialogFragment();
-                    amd.show(getSupportFragmentManager(), "tagAddMovie");
-                }
+                showMovieDialog(position);
             }
 
             @Override
             public void onItemZoomOut(View view, int position) {
                 Log.d(TAG, "onItemZoomOut: at pos=" + position + ": " + mAdapter.getAt(position).getTitle());
+                showDeleteDialog(view, position);
+            }
+
+            void showMovieDialog(int position) {
                 if ((!mDataActionInProgress)
                         && (mIsSortFinished) // rv is sync. with adapter
                         && mAdapter.getItemViewType(position) == GroupingAdapter.DATAROW) {
                     mDataActionInProgress = true;
-                    Log.d(TAG, "onItemZoomOut: Creating delete dialog..");
-                    MovieViewHolder mvh = (MovieViewHolder)mGroupingRecyclerView.getChildViewHolder(view);
-                    String msg = String.format(getString(R.string.delete_movie_dialog_message),
-                            mvh.title.getText(), mvh.genre.getText(), mvh.year.getText());
-                    DeleteMovieDialogFragment.createInstance(msg, position)
+                    Log.d(TAG, "Creating Movie dialog..");
+                    (new AddMovieDialogFragment())
+                            .show(getSupportFragmentManager(), "tagAddMovie");
+                }
+            }
+
+            void showDeleteDialog(View view,int position){
+                if ((!mDataActionInProgress)
+                        && (mIsSortFinished) // rv is sync. with adapter
+                        && mAdapter.getItemViewType(position) == GroupingAdapter.DATAROW) {
+                    mDataActionInProgress = true;
+                    Log.d(TAG, "Creating delete dialog..");
+                    Movie m = (Movie)mAdapter.getAt(position);
+                    DeleteMovieDialogFragment.createInstance(getApplicationContext(), m)
                             .show(getSupportFragmentManager(), "tagDeleteMovie");
                 }
             }
@@ -204,16 +203,19 @@ public class BaseActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d(TAG, "onStart: ");
         // Fragment's onCreate() is executed, ready to get adapter
         mMovieDb = mWorker.getMovieDb();
         mAdapter = mWorker.getMoviesAdapter();
         mGroupedMovies = mWorker.getmGroupedMovies();
         // Link newly created mGroupingRecyclerView and retaining mAdapter
         mGroupingRecyclerView.setAdapter(mAdapter);
-        // Test merge() at first run
+        // Test addAll() on sorted list at first run
         if (mGroupedMovies.size() == 0) {
             mGroupedMovies.sort(Movie.getOrderByFields().get(1));
+            // do not add it to db, add to mGroupedMovies only
             mGroupedMovies.add(new Movie("Start M", "Fiction", "1951"));
+            // test
             mGroupedMovies.addAll(mMovieDb.getDataList());
         }
     }
@@ -264,19 +266,25 @@ public class BaseActivity extends AppCompatActivity
         Log.d(TAG, "onStop: ");
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+        // prevent activity leaking
+        mGroupingRecyclerView.setAdapter(null);
+    }
+
     // ** DeleteMovieDialogFragment.YesNoListener members **
 
     @Override
-    public void onDeleteYes(int position) {
-
-        Log.d(TAG, "!! Gonna delete position =" + position);
+    public void onDeleteYes(Movie m) {
+        Log.d(TAG, "!! Gonna delete Movie =" + m.getTitle());
         try {
-            Movie m = (Movie)mAdapter.getAt(position);
             mMovieDb.delete(m);
             mGroupedMovies.remove(m);
-            Log.d(TAG, "Deleted position =" + position);
+            Log.d(TAG, "Deleted Movie =" + m.getTitle());
         } catch (IOException e) {
-            Log.e(TAG, "!!FAILED to delete position =" + position, e);
+            Log.e(TAG, "!!FAILED to delete Movie =" + m.getTitle(), e);
         }
     }
 
