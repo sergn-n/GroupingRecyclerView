@@ -49,6 +49,10 @@ public class GroupedList<T extends Titled> {
         this.mCallback = cb;
     }
 
+    public int size(){
+        return mItemsList.size();
+    }
+
     public void clear(){
         mItemsList.clear();
         mItems2Headers.clear();
