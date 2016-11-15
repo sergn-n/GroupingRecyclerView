@@ -67,16 +67,15 @@ public class OnMovieTouchListener implements RecyclerView.OnItemTouchListener {
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
                 double scaleFactor = detector.getScaleFactor();
-                Log.d(TAG, "Scale gesture detected : "+
-                        ((1.0f > scaleFactor)? "Pinch" :"ZoomIn"));
+                Log.d(TAG, String.format("Scale gesture detected : %.3f", scaleFactor));
 
                 View child = recyclerView.findChildViewUnder(detector.getFocusX(), detector.getFocusY());
                 if (child == null)
                     return true;
-                int position =  recyclerView.getChildLayoutPosition(child);
-                if (1.0f > scaleFactor) {
+                int position = recyclerView.getChildLayoutPosition(child);
+                if (0.98f > scaleFactor) {
                     clickListener.onItemZoomOut(child, position);
-                } else {
+                } else  if (1.02f < scaleFactor){
                     clickListener.onItemZoomIn(child, position);
                 }
                 return true;
