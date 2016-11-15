@@ -2,10 +2,13 @@ package ru.ncom.groupingrvexample;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+
+import ru.ncom.groupingrvexample.model.Movie;
 
 /**
  * Created by gerg on 10.10.2016.
@@ -14,7 +17,7 @@ import android.support.v7.app.AlertDialog;
 public class DeleteMovieDialogFragment extends DialogFragment {
 
     public interface YesNoListener {
-        void onDeleteYes(int position);
+        void onDeleteYes(Movie m);
 
         void onDeleteDismiss();
     }
@@ -28,11 +31,14 @@ public class DeleteMovieDialogFragment extends DialogFragment {
      * @param position when deletion is confirmed  {@link YesNoListener#onDeleteYes(int position)} is fired.
      * @return
      */
-    public static DeleteMovieDialogFragment createInstance(String message, int position){
+    public static DeleteMovieDialogFragment createInstance(Context ctx, Movie m){
+        String message = String.format(ctx.getString(R.string.delete_movie_dialog_message),
+                m.getTitle(), m.getGenre(), m.getYear());
+
         DeleteMovieDialogFragment f = new DeleteMovieDialogFragment();
         Bundle b = new Bundle();
         b.putString(MSG, message);
-        b.putInt(POS, position);
+        b.putSerializable(POS, m);
         f.setArguments(b);
         return f;
     };
@@ -54,7 +60,7 @@ public class DeleteMovieDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle b = getArguments();
-        final int position = b.getInt(POS);
+        final Movie m = (Movie)b.getSerializable(POS);
         return new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.delete_movie_dialog_title)
                 .setMessage(b.getString(MSG))
@@ -62,7 +68,7 @@ public class DeleteMovieDialogFragment extends DialogFragment {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ((YesNoListener) getActivity()).onDeleteYes(position);
+                        ((YesNoListener) getActivity()).onDeleteYes(m);
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {

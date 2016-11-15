@@ -17,7 +17,7 @@ import ru.ncom.groupingrvadapter.GetterAtPosition;
 
 public class OnMovieTouchListener implements RecyclerView.OnItemTouchListener {
 
-    public interface ClickListener {
+    public interface GestureListener {
         void onItemClick(View view, int position);
 
         void onItemLongClick(View view, int position);
@@ -30,10 +30,10 @@ public class OnMovieTouchListener implements RecyclerView.OnItemTouchListener {
     private static final String TAG ="OnMovieTouchListener";
     private GestureDetector gestureDetector;
     private ScaleGestureDetector scaleGestureDetector;
-    private OnMovieTouchListener.ClickListener clickListener;
+    private GestureListener gestureListener;
 
-    public OnMovieTouchListener(Context context, final RecyclerView recyclerView, final OnMovieTouchListener.ClickListener clickListener) {
-        this.clickListener = clickListener;
+    public OnMovieTouchListener(Context context, final RecyclerView recyclerView, final GestureListener gestureListener) {
+        this.gestureListener = gestureListener;
         gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
 
             @Override
@@ -55,8 +55,8 @@ public class OnMovieTouchListener implements RecyclerView.OnItemTouchListener {
                             ((Selectable)item).setSelected(newState);
                     }
 
-                    if(clickListener != null) {
-                        clickListener.onItemLongClick(child, position);
+                    if(gestureListener != null) {
+                        gestureListener.onItemLongClick(child, position);
                     }
                 }
             }
@@ -70,13 +70,15 @@ public class OnMovieTouchListener implements RecyclerView.OnItemTouchListener {
                 Log.d(TAG, String.format("Scale gesture detected : %.3f", scaleFactor));
 
                 View child = recyclerView.findChildViewUnder(detector.getFocusX(), detector.getFocusY());
-                if (child == null)
+                if (null == child)
                     return true;
                 int position = recyclerView.getChildLayoutPosition(child);
+                if (RecyclerView.NO_POSITION == position)
+                    return true;
                 if (0.98f > scaleFactor) {
-                    clickListener.onItemZoomOut(child, position);
-                } else  if (1.02f < scaleFactor){
-                    clickListener.onItemZoomIn(child, position);
+                    gestureListener.onItemZoomOut(child, position);
+                } else if (1.02f < scaleFactor) {
+                    gestureListener.onItemZoomIn(child, position);
                 }
                 return true;
             }
@@ -100,8 +102,8 @@ public class OnMovieTouchListener implements RecyclerView.OnItemTouchListener {
         // listening to touch-related events till the gesture ends or its override method consumes event.
         boolean eventConsumed = gestureDetector.onTouchEvent(e);
         Log.d(TAG, "onInterceptTouchEvent: gestureDetector . eventConsumed=" + eventConsumed);
-        if (child != null && clickListener != null && eventConsumed) {
-            clickListener.onItemClick(child, rv.getChildLayoutPosition(child));
+        if (child != null && gestureListener != null && eventConsumed) {
+            gestureListener.onItemClick(child, rv.getChildLayoutPosition(child));
         }
         eventConsumed = scaleGestureDetector.onTouchEvent(e);
         Log.d(TAG, "onInterceptTouchEvent: scaleGestureDetector . eventConsumed=" + eventConsumed);
