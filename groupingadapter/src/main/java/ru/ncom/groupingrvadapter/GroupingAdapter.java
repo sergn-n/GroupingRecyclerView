@@ -80,40 +80,39 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     }
 
     /**
-     * Inflates specified header layout
+     * Convenience method. Inflates specified header layout
      * Creates default ViewHolder to hold specified title TextView of the layout.
      * Alternatively you can create your own holder which must implement {@link TitledViewHolder}
      * @param headerLayoutId id of the header layout.
      * @param titleTextViewId id of the title TextView in the header layout.
      * @param parent
      * @return
-     */
     public RecyclerView.ViewHolder createHeaderViewHolder(int headerLayoutId, int titleTextViewId, ViewGroup parent) {
         View itemView = LayoutInflater.from(parent.getContext())
                     .inflate(headerLayoutId, parent, false);
             return new HeaderViewHolder(itemView, titleTextViewId);
     }
+    */
 
     /**
-     * Sets text value of the title TextView, see {@link TitledViewHolder#getTitleView()}. Sets itemView selection. If current view is a header
+     * Sets itemView selection. If current view is a header
      * adds also a number of items under the header. For a header also sets it's expand/collapse ClickListener.
      * @param holder
      * @param position
      */
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Titled item = mItemsList.get(position);
-        if (holder.getItemViewType() == HEADERROW )
-            holder.itemView.setOnClickListener(mCollapseExpandCL);
+        Object item = mItemsList.get(position);
         if (item instanceof Selectable)
             holder.itemView.setSelected(((Selectable)item).isSelected());
-        TextView v = ((TitledViewHolder)holder).getTitleView();
-        String txt = item.getTitle();
-        if ( !isDataClass(item) ) {
+        if (holder.getItemViewType() == HEADERROW ) {
+            holder.itemView.setOnClickListener(mCollapseExpandCL);
+            TextView v = ((HeaderViewHolder)holder).getTitleView();
             Header<T> h = (Header<T>)item;
+            String txt = h.getTitle();
             txt += (" (" + h.getChildItemList().size() + ")");
+            v.setText(txt);
         }
-        v.setText(txt);
     }
 
     // ** **
@@ -169,7 +168,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     }
 
     private void toggleCollapseExpand(int headerPosition) {
-        Titled itm = mItemsList.get(headerPosition);
+        Object itm = mItemsList.get(headerPosition);
         if (!isDataClass(itm)) {
             // clear restored state
             mCollapsedHeaders = null;
@@ -200,13 +199,13 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     private void saveCollapsedHeaders(){
         mCollapsedHeaders = new ArrayList<>();
         for (int i = 0; i< mItemsList.size(); i++){
-            Titled itm = mItemsList.get(i);
+            Object itm = mItemsList.get(i);
             if ((!isDataClass(itm)) && ((Header<T>)itm).isCollapsed())
-                mCollapsedHeaders.add(itm.getTitle());
+                mCollapsedHeaders.add(((Header<T>)itm).getTitle());
         }
     }
 
-    private boolean isDataClass(Titled tobj) {
+    private boolean isDataClass(Object tobj) {
         return mClass.isInstance(tobj);
     }
 

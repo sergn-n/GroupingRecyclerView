@@ -1,7 +1,7 @@
 package ru.ncom.groupingrvadapter;
 
 /**
- * Has Title
+ * Convenience interface. Has Title
  */
 public interface Titled {
     String getTitle();

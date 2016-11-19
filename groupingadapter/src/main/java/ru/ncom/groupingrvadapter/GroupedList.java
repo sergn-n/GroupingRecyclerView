@@ -18,7 +18,7 @@ import java.util.Map;
  *  - dataset changed if more then one group is changed or ordering/grouping field is changed.
  */
 
-public class GroupedList<T extends Titled> {
+public class GroupedList<T > {
     private final Class<T> mClass;
 
     private Callback mCallback;
@@ -247,7 +247,7 @@ public class GroupedList<T extends Titled> {
         int cmp = 1;
         while (left <= right) {
             middle = (left + right) / 2;
-            Titled myItem = headers.get(middle);
+            Header myItem = headers.get(middle);
             cmp = myItem.getTitle().compareTo(title);
             if (cmp < 0) {
                 left = middle + 1;
@@ -260,7 +260,7 @@ public class GroupedList<T extends Titled> {
         return -middle - (cmp > 0 ? 1 : 2);
     }
 
-    public interface Callback<T2 extends Titled>{
+    public interface Callback<T2>{
 
         ComparatorGrouper<T2> getComparatorGrouper(String sortField) ;
 
