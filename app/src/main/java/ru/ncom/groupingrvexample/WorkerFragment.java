@@ -52,6 +52,6 @@ public class WorkerFragment extends Fragment {
         // MovieDb needs context to get local file.
         mMovieDb = new MovieDb(appCtx);
         mMoviesAdapter = new MoviesAdapter();
-        mGroupedMovies = new GroupedList<>(Movie.class, mMoviesAdapter);
+        mGroupedMovies = new GroupedList<>(mMoviesAdapter);
     }
 }
