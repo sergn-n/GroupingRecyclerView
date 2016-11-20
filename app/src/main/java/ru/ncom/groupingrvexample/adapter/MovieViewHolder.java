@@ -6,6 +6,7 @@ import android.widget.TextView;
 
 import ru.ncom.groupingrvexample.R;
 import ru.ncom.groupingrvadapter.TitledViewHolder;
+import ru.ncom.groupingrvexample.model.Movie;
 
 public class MovieViewHolder extends RecyclerView.ViewHolder
         implements TitledViewHolder {
@@ -20,6 +21,12 @@ public class MovieViewHolder extends RecyclerView.ViewHolder
         // genre and year are declared clickable in XML;
         // The listener is called on long click too!
         year.setOnClickListener(onClickListener);
+    }
+
+    public void bind (Movie m){
+        title.setText(m.getTitle());
+        genre.setText(m.getGenre());
+        year.setText(m.getYear());
     }
 
     @Override
