@@ -18,8 +18,7 @@ import java.util.Map;
  *  - dataset changed if more then one group is changed or ordering/grouping field is changed.
  */
 
-public class GroupedList<T > {
-    private final Class<T> mClass;
+public class GroupedList<T> {
 
     private Callback mCallback;
     public Callback getCallback() {
@@ -44,8 +43,7 @@ public class GroupedList<T > {
         return mHeaders;
     }
 
-    public GroupedList(Class<T> clazz, Callback<T> cb) {
-        this.mClass = clazz;
+    public GroupedList(Callback<T> cb) {
         this.mCallback = cb;
     }
 
@@ -113,7 +111,7 @@ public class GroupedList<T > {
 
         // doSort() uses only getComparatorGrouper() method of callback,
         // no calls of on<Event>() methods
-        GroupedList<T> newItems = new GroupedList<T>(mClass, mCallback);
+        GroupedList<T> newItems = new GroupedList<T>(mCallback);
         newItems.addAll(items);
         newItems.doSort(mSortFieldName);
         merge(newItems);
@@ -121,7 +119,6 @@ public class GroupedList<T > {
     }
 
     private void merge(GroupedList<T> newItemList) {
-        //TODO
         List<Header<T>> newHeaders = newItemList.getHeaders();
         ComparatorGrouper cg = mCallback.getComparatorGrouper(mSortFieldName);
         for (int i = 0; i < newHeaders.size(); i++){
@@ -133,7 +130,7 @@ public class GroupedList<T > {
                 // merge items, take no care of doubles
                 Header<T> h = mHeaders.get(hpos);
                 List<T> children = h.getChildItemList();
-                //TODO is 2 lists -> array  -> sort -> list better (perfomance)?
+                //TODO Has the version {2 lists -> array  -> sort -> list} got better performance?
                 Object[] ca = children.toArray();
                 for (int j = 0; j < newChildren.size(); j++) {
                     T itm = newChildren.get(j);

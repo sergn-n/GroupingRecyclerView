@@ -18,24 +18,22 @@ import java.util.Map;
 /**
  * Created by Serg on 11.09.2016.
  */
-public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+public abstract class GroupingAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             implements GetterAtPosition, GroupedList.Callback<T> {
 
     /**
-     * Row type: row of data of T type
+     * Row type: Header of the group
      */
-    public static final int DATAROW = 1;
+    public static final int HEADERROW = 1;
     /**
-     * Row type: header of the group of rows of data of T type
+     * Row type: not a Header
      */
-    public static final int HEADERROW = 2;
+    public static final int DATAROW = 2;
 
     private final String COLLAPSEDHEADERS = "COLLAPSEDHEADERS";
     private final String SORTFIELDNAME = "SORTFIELDNAME";
 
-    private final Class<T> mClass;
-
-    private final List<Titled> mItemsList = new ArrayList<>();
+    private final List<Object> mItemsList = new ArrayList<>();
 
     private ArrayList<String> mCollapsedHeaders = null;
 
@@ -48,10 +46,6 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     private int[] mHeader2Item;
     private int mHeader2ItemSize = 0;
-
-    public GroupingAdapter(Class<T> clazz) {
-        this.mClass = clazz;
-    }
 
     // ** RecyclerView.Adapter<> members **
 
@@ -69,9 +63,9 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     @Override
     public int getItemViewType(int position) {
-        if (isDataClass(mItemsList.get(position)))
-            return DATAROW;
-        return HEADERROW;
+        if (isHeaderClass(mItemsList.get(position)))
+            return HEADERROW;
+        return DATAROW;
     }
 
     @Override
@@ -118,7 +112,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
     // ** **
 
     @Override
-    public Titled getAt(int position) {
+    public Object getAt(int position) {
         return mItemsList.get(position);
     }
 
@@ -169,7 +163,7 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
 
     private void toggleCollapseExpand(int headerPosition) {
         Object itm = mItemsList.get(headerPosition);
-        if (!isDataClass(itm)) {
+        if (isHeaderClass(itm)) {
             // clear restored state
             mCollapsedHeaders = null;
             // toggle collapse
@@ -200,13 +194,13 @@ public abstract class GroupingAdapter<T extends Titled> extends RecyclerView.Ada
         mCollapsedHeaders = new ArrayList<>();
         for (int i = 0; i< mItemsList.size(); i++){
             Object itm = mItemsList.get(i);
-            if ((!isDataClass(itm)) && ((Header<T>)itm).isCollapsed())
+            if ((isHeaderClass(itm)) && ((Header<T>)itm).isCollapsed())
                 mCollapsedHeaders.add(((Header<T>)itm).getTitle());
         }
     }
 
-    private boolean isDataClass(Object tobj) {
-        return mClass.isInstance(tobj);
+    private boolean isHeaderClass(Object tobj) {
+        return Header.class.isInstance(tobj);
     }
 
     private class CollapseExpandClickListener implements View.OnClickListener {
