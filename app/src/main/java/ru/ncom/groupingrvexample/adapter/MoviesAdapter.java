@@ -1,7 +1,5 @@
 package ru.ncom.groupingrvexample.adapter;
 
-
-import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,7 +16,6 @@ import ru.ncom.groupingrvadapter.Titled;
 import ru.ncom.groupingrvexample.R;
 
 import ru.ncom.groupingrvexample.model.Movie;
-import ru.ncom.groupingrvexample.model.MovieDb;
 
 /**
  * Example of grouping adapter for Movie class
@@ -27,9 +24,7 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     private final String TAG = "MoviesAdapter";
 
-    public MoviesAdapter() {
-        super(Movie.class);
-    }
+    private View.OnClickListener mToastClickListener;
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -50,16 +45,14 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        // Default binding for title TextView
+        // Selection; Header: collapsing/expanding, number of items.
         super.onBindViewHolder(holder, position);
-        // My binding for Data
+        // Data binding
         Titled item = getAt(position);
         switch (holder.getItemViewType()){
             case DATAROW :
                 MovieViewHolder vh = (MovieViewHolder)holder;
-                Movie m = (Movie)item;
-                vh.genre.setText(m.getGenre());
-                vh.year.setText(m.getYear());
+                vh.bind((Movie)item);
                 break;
             default: // HEADERROW
                 MovieHeaderViewHolder vhh = (MovieHeaderViewHolder)holder;
@@ -76,10 +69,17 @@ public class MoviesAdapter extends GroupingAdapter<Movie> {
         mToastClickListener = new ToastOnClickListener(rv);
     }
 
+    /**
+     * Casts super#getAt to Titled which both header and all items implement.
+     * @param position
+     * @return
+     */
+    @Override
+    public Titled getAt(int position) {
+        return (Titled)super.getAt(position);
+    }
 
     // Demo listener, is applied to childs of Data row
-
-    private View.OnClickListener mToastClickListener;
 
     public static class ToastOnClickListener implements View.OnClickListener {
         private final String TAG = "ToastCL(Adpt)";
