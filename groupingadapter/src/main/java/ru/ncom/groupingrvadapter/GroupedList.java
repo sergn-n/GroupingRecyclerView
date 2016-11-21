@@ -97,6 +97,9 @@ public class GroupedList<T> {
         }
     }
 
+    /**
+     * Adds items to the list.
+     */
     public void addAll(List<T> items) {
         if (items.size() == 0) {
             return;
@@ -116,6 +119,13 @@ public class GroupedList<T> {
         newItems.doSort(mSortFieldName);
         merge(newItems);
         mCallback.onDataSorted(this);
+    }
+
+    /**
+     * Adds items to the list. null will throw NullPointerException
+     */
+    public void addAll(T... items) {
+        addAll(Arrays.asList(items));
     }
 
     private void merge(GroupedList<T> newItemList) {
@@ -149,14 +159,6 @@ public class GroupedList<T> {
                 }
             }
         }
-    }
-
-    /**
-     * Adds the given items to the list. Does not modify the input.
-     */
-    public void addAll(T... items) {
-        //TODO
-        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     public boolean remove(T item){
