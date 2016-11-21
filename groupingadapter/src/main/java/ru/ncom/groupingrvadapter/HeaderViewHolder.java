@@ -1,5 +1,6 @@
 package ru.ncom.groupingrvadapter;
 
+import android.support.annotation.IdRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
@@ -12,7 +13,7 @@ public class HeaderViewHolder extends RecyclerView.ViewHolder
 
     public final TextView title;
 
-    public HeaderViewHolder(View view, int titleTextViewId) {
+    public HeaderViewHolder(View view, @IdRes int titleTextViewId) {
         super(view);
         title = (TextView) view.findViewById(titleTextViewId);
     }

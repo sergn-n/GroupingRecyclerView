@@ -63,7 +63,7 @@ public class Movie extends TitledSelectableItem implements Serializable {
     }
 
     /**
-     * Groups movies by the first letter of Title
+     * Groups movies by the first letter of movie Title
      */
     private static class MovieComparatorGrouperTitle extends ComparatorGrouper<Movie> {
 
@@ -79,7 +79,7 @@ public class Movie extends TitledSelectableItem implements Serializable {
     }
 
     /**
-     * Groups movies by the Genre
+     * Groups movies by the Genre, Group Title = Sort Key (default)
      */
     private static class MovieComparatorGrouperGenre extends ComparatorGrouper<Movie> {
 
@@ -88,10 +88,6 @@ public class Movie extends TitledSelectableItem implements Serializable {
             return m.getGenre();
         }
 
-        @Override
-        public String getGroupTitle(Movie m) {
-            return m.getGenre();
-        }
     }
 
     /**
