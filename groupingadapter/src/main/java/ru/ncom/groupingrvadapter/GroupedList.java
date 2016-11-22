@@ -3,6 +3,7 @@ package ru.ncom.groupingrvadapter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,11 +80,7 @@ public class GroupedList<T> {
         if (hpos >= 0) {
             // found the group new item belongs to
             h = mHeaders.get(hpos);
-            List<T> children = h.getChildItemList();
-            int pos = Arrays.binarySearch(children.toArray(), item, cg);
-            if (pos < 0)
-                pos = -1 - pos;
-            children.add(pos, item);
+            int pos = addItem2Header(item, h, cg);
             mItems2Headers.put(item, h);
             mCallback.onGroupedItemAdded(hpos, item, pos);
         }
@@ -111,13 +108,26 @@ public class GroupedList<T> {
                 mCallback.onUngroupedItemsAdded(items);
             return;
         }
+        // Just sort it if not sorted yet.
+        if (mHeaders.size() == 0) {
+            // will throw if mCallback == null
+            doSort(mSortFieldName);
+            mCallback.onDataSorted(this);
+            return;
+        }
+
+        // Add new items to sorted list
 
         // doSort() uses only getComparatorGrouper() method of callback,
         // no calls of on<Event>() methods
-        GroupedList<T> newItems = new GroupedList<T>(mCallback);
-        newItems.addAll(items);
-        newItems.doSort(mSortFieldName);
-        merge(newItems);
+//        GroupedList<T> newItems = new GroupedList<T>(mCallback);
+//        newItems.addAll(items);
+//        newItems.doSort(mSortFieldName);
+//        merge(newItems);
+        T[] newItems = (T[])items.toArray();
+        ComparatorGrouper<T> cg = throwIfNoCallback();
+        Arrays.sort(newItems, cg);
+        mergeItems(newItems, cg);
         mCallback.onDataSorted(this);
     }
 
@@ -159,6 +169,45 @@ public class GroupedList<T> {
                 }
             }
         }
+    }
+
+    /**
+     *  Merge to non empty Headers
+     * @param items
+     * @param cg
+     */
+    private  void mergeItems(T[] items, ComparatorGrouper<T> cg){
+        Header<T> h = mHeaders.get(0);
+        for (int i = 0; i < items.length; i++){
+            String myGroupTitle = cg.getGroupTitle(items[i]);
+            if (!h.getTitle().equals(myGroupTitle)) {
+                int hpos = binarySearch(myGroupTitle, mHeaders);
+                if (hpos < 0) {
+                    // new Header with item
+                    h = new Header<>(myGroupTitle);
+                    mHeaders.add(-1 - hpos, h);
+                    h.getChildItemList().add(items[i]);
+                }
+                else {
+                    // add to existing Header
+                    addItem2Header(items[i], h ,cg);
+                }
+            }
+            else{
+                // add to existing Header
+                addItem2Header(items[i], h ,cg);
+            }
+            mItems2Headers.put(items[i], h);
+        }
+    }
+
+    private int addItem2Header(T item, Header h, Comparator cg){
+        List<T> children = h.getChildItemList();
+        int pos = Arrays.binarySearch(children.toArray(), item, cg);
+        if (pos < 0)
+            pos = -1 - pos;
+        children.add(pos, item);
+        return pos;
     }
 
     public boolean remove(T item){
@@ -257,6 +306,12 @@ public class GroupedList<T> {
             }
         }
         return -middle - (cmp > 0 ? 1 : 2);
+    }
+
+    private ComparatorGrouper<T> throwIfNoCallback(){
+        if (mCallback == null)
+            throw new IllegalArgumentException("No callback specified, can't get ComparatorGrouper.");
+        return mCallback.getComparatorGrouper(mSortFieldName);
     }
 
     public interface Callback<T2>{
