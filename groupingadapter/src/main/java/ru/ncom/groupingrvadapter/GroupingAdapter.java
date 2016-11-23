@@ -238,9 +238,10 @@ public abstract class GroupingAdapter<T> extends RecyclerView.Adapter<RecyclerVi
         for (Header<T> h: gl.getHeaders()) {
             mItemsList.add(h);
             mHeader2Item[hIdx++] = mItemsList.size() - 1;
-            for (T item: h.getChildItemList()) {
-                mItemsList.add(item);
-            }
+            if (!h.isCollapsed())
+                for (T item: h.getChildItemList()) {
+                    mItemsList.add(item);
+                }
         }
         notifyDataSetChanged();
     }

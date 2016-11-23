@@ -8,17 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Serg on 27.10.2016.
- * Sorted grouped list.
- * Keeps track of item's order and grouping.
- * Notifies adapter on:
+/**.
+ * Grouped list of items of T type.
+ * Keeps track of item's grouping according to the items' sort key and group headers provided by callback..
+ * List is generally not ordered except immediately after sort or addAll method call.
+ * Notifies adapter (callback) on:
  *  - group added, deleted
  *  - group items added, deleted, changed
  *  - non-grouped events
  *  - dataset changed if more then one group is changed or ordering/grouping field is changed.
  */
-
 public class GroupedList<T> {
 
     private Callback mCallback;
@@ -108,26 +107,22 @@ public class GroupedList<T> {
                 mCallback.onUngroupedItemsAdded(items);
             return;
         }
-        // Just sort it if not sorted yet.
-        if (mHeaders.size() == 0) {
-            // will throw if mCallback == null
-            doSort(mSortFieldName);
-            mCallback.onDataSorted(this);
-            return;
-        }
 
-        // Add new items to sorted list
+        // - v.1 just sort it
+        doSort(mSortFieldName);
 
-        // doSort() uses only getComparatorGrouper() method of callback,
-        // no calls of on<Event>() methods
-//        GroupedList<T> newItems = new GroupedList<T>(mCallback);
-//        newItems.addAll(items);
-//        newItems.doSort(mSortFieldName);
-//        merge(newItems);
-        T[] newItems = (T[])items.toArray();
-        ComparatorGrouper<T> cg = throwIfNoCallback();
-        Arrays.sort(newItems, cg);
-        mergeItems(newItems, cg);
+//  - v. 2 slow too due to merge, binarysearch
+//        // Just sort it if not sorted yet.
+//        if (mHeaders.size() == 0) {
+//            // will throw if mCallback == null
+//            doSort(mSortFieldName);
+//        } else {
+//            T[] newItems = (T[])items.toArray();
+//            ComparatorGrouper<T> cg = throwIfNoCallback();
+//            Arrays.sort(newItems, cg);
+//            mergeItems(newItems, cg);
+//        }
+
         mCallback.onDataSorted(this);
     }
 
@@ -136,39 +131,6 @@ public class GroupedList<T> {
      */
     public void addAll(T... items) {
         addAll(Arrays.asList(items));
-    }
-
-    private void merge(GroupedList<T> newItemList) {
-        List<Header<T>> newHeaders = newItemList.getHeaders();
-        ComparatorGrouper cg = mCallback.getComparatorGrouper(mSortFieldName);
-        for (int i = 0; i < newHeaders.size(); i++){
-            Header<T> newH = newHeaders.get(i);
-            List<T> newChildren = newH.getChildItemList();
-            String newHTitle = newHeaders.get(i).getTitle();
-            int hpos = binarySearch(newHTitle, mHeaders);
-            if (hpos >= 0) {
-                // merge items, take no care of doubles
-                Header<T> h = mHeaders.get(hpos);
-                List<T> children = h.getChildItemList();
-                //TODO Has the version {2 lists -> array  -> sort -> list} got better performance?
-                Object[] ca = children.toArray();
-                for (int j = 0; j < newChildren.size(); j++) {
-                    T itm = newChildren.get(j);
-                    int tpos = Arrays.binarySearch(ca, itm, cg);
-                    if (tpos < 0)
-                        tpos = -1 - tpos;
-                    children.add(tpos, itm);
-                    mItems2Headers.put(itm, h);
-                }
-            }
-            else {
-                // add new header
-                mHeaders.add(-1 - hpos, newH);
-                for (int j = 0; j < newChildren.size(); j++) {
-                    mItems2Headers.put(newChildren.get(j), newH);
-                }
-            }
-        }
     }
 
     /**
@@ -253,28 +215,41 @@ public class GroupedList<T> {
     }
 
     public List<Header<T>> doSort(String sortField) {
+        List<String> collapsedTitles = null;
+        if (mItemsList.size() > 0 && mSortFieldName != null && mSortFieldName.equals(sortField)){
+            // remember collapsing for the same ordering
+            collapsedTitles = new ArrayList<>(mHeaders.size());
+            for (Header<T> h: mHeaders) {
+                if (h.isCollapsed())
+                    collapsedTitles.add(h.getTitle());
+            }
+        }
         mSortFieldName = sortField;
         mItems2Headers.clear();
         mHeaders.clear();
         if (mItemsList.size() == 0)
             return mHeaders;
 
-        if (mCallback == null)
-            throw new IllegalArgumentException("No callback specified, can't get ComparatorGrouper.");
-        ComparatorGrouper cg = mCallback.getComparatorGrouper(sortField);
+        ComparatorGrouper cg = throwIfNoCallback();
         if (mItemsList.size() > 1)
             Collections.sort(mItemsList, cg);
-        Header<T> h = new Header<>(cg.getGroupTitle(mItemsList.get(0)));
+        // First Header
+        String newTitle = cg.getGroupTitle(mItemsList.get(0));
+        Header<T> h = new Header<>(newTitle);
         mHeaders.add(h);
+        if (collapsedTitles != null && collapsedTitles.contains(newTitle))
+            h.setCollapsed(true);
         for (int i = 0; i < mItemsList.size(); i++) {
             T m = mItemsList.get(i);
-            String newTitle = cg.getGroupTitle(m);
+            newTitle = cg.getGroupTitle(m);
             if (!newTitle.equals(h.getTitle())) {
                 //TODO sort headers instead ?
                 if (newTitle.compareTo(h.getTitle()) < 0)
                     throw new IllegalArgumentException("Group headers must increase on sorted items");
                 h = new Header<T>(newTitle);
                 mHeaders.add(h);
+                if (collapsedTitles != null && collapsedTitles.contains(newTitle))
+                    h.setCollapsed(true);
             }
             h.getChildItemList().add(m);
             mItems2Headers.put(m,h);
