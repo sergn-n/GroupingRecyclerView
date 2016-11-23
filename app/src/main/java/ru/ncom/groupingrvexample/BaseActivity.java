@@ -81,7 +81,7 @@ public class BaseActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Worker
+        // Retained fragment holds data and adapter
         FragmentManager fm = getSupportFragmentManager();
         mWorker = (WorkerFragment)fm.findFragmentByTag(WorkerFragment.TAG);
         if (mWorker == null){
@@ -93,6 +93,7 @@ public class BaseActivity extends AppCompatActivity
                 mWorker.setRegenerate(b != null && b.getInt(REGENERATE) != 0);
             }
         }
+        // Inform retained fragment that activity was recreated
         mWorker.setCurrentBaseActivity(this);
 
         // * for mSortSpinner
@@ -217,12 +218,11 @@ public class BaseActivity extends AppCompatActivity
         mGroupedMovies = mWorker.getmGroupedMovies();
         // Link newly created mGroupingRecyclerView and retaining mAdapter
         mGroupingRecyclerView.setAdapter(mAdapter);
-        // Test addAll() on sorted list at first run
         if (mGroupedMovies.size() == 0) {
-            mGroupedMovies.sort(Movie.getOrderByFields().get(1));
-            // do not add it to db, add to mGroupedMovies only
-            mGroupedMovies.add(new Movie("Start M", "Fiction", "1951"));
-            // test
+//   -- Test addAll() on sorted list at first run
+//            mGroupedMovies.sort(Movie.getOrderByFields().get(1));
+//            // do not add it to db, add to mGroupedMovies only
+//            mGroupedMovies.add(new Movie("Start M", "Fiction", "1951"));
             mGroupedMovies.addAll(mMovieDb.getDataList());
         }
     }
