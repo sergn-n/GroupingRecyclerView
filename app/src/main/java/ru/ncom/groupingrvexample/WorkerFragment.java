@@ -41,6 +41,16 @@ public class WorkerFragment extends Fragment {
         this.currentBaseActivity = currentBaseActivity;
     }
 
+    private boolean regenerate = false;
+
+    /**
+     *
+     * @param regenerate when true onCreate will delete the file and generate it from scratch.
+     */
+    public void setRegenerate(boolean regenerate) {
+        this.regenerate = regenerate;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +61,8 @@ public class WorkerFragment extends Fragment {
         Context appCtx = getActivity().getApplicationContext();
         // MovieDb needs context to get local file.
         mMovieDb = new MovieDb(appCtx);
+        if (regenerate)
+            mMovieDb.regenerate();
         mMoviesAdapter = new MoviesAdapter();
         mGroupedMovies = new GroupedList<>(mMoviesAdapter);
     }

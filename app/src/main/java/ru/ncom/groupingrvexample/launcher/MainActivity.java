@@ -24,8 +24,8 @@ public class MainActivity extends ListActivity {
         ArrayAdapter adapter = new ArrayAdapter<String>(
                 this, // Context.
                 android.R.layout.simple_list_item_1,  // Specify the row template to use
-                new String[] {"Grouping Recycler View : ArrayList datasource."
-                        ," Cursor data source : Not implemented yet"}
+                new String[] {"Grouping Recycler View : Keep data."
+                        ," Grouping Recycler View : Regenerate data"}
         );
         // Bind to our new adapter.
         setListAdapter(adapter);
@@ -34,12 +34,15 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-        Intent i;
-        switch (position){
-            case 0:
-                i = new Intent(this, BaseActivity.class);
-                startActivity(i);
-                break;
+        Intent i = new Intent(this, BaseActivity.class);
+        switch (position) {
+            case 1:
+                Bundle b = new Bundle();
+                b.putInt(BaseActivity.REGENERATE, 1); //
+                i.putExtras(b); //
+            break;
         }
+        startActivity(i);
+
     }
 }

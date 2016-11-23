@@ -43,6 +43,8 @@ public class BaseActivity extends AppCompatActivity
             DeleteMovieDialogFragment.YesNoListener,
             AddMovieDialogFragment.YesNoListener{
 
+    public static final String REGENERATE = "RE";
+
     private final String TAG = "Base";
 
     private MovieDb mMovieDb;
@@ -85,6 +87,11 @@ public class BaseActivity extends AppCompatActivity
         if (mWorker == null){
             mWorker = new WorkerFragment();
             fm.beginTransaction().add(mWorker, WorkerFragment.TAG).commit();
+            if (savedInstanceState == null) {
+                // Check intent parameters on first Create
+                Bundle b = getIntent().getExtras();
+                mWorker.setRegenerate(b != null && b.getInt(REGENERATE) != 0);
+            }
         }
         mWorker.setCurrentBaseActivity(this);
 

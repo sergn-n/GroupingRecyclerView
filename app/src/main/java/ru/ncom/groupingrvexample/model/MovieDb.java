@@ -142,7 +142,11 @@ public class MovieDb
         return movieList;
     }
 
-
+    public List<Movie> regenerate() {
+        mContext.deleteFile(FILENAME);
+        generate();
+        return movieList;
+    }
     // #region Data Modification
 
     public void add (Movie m)throws IOException{
