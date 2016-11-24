@@ -31,7 +31,7 @@ public class GroupedList<T> {
         return mSortFieldName;
     }
 
-    // Unsorted list, original order
+    // All items
     private final List<T> mItemsList = new ArrayList<>();
 
     // Sorted item to group header map
@@ -108,48 +108,64 @@ public class GroupedList<T> {
             return;
         }
 
-        // - v.1 just sort it
-//        doSort(mSortFieldName);
+        // List is grouped
 
-        //  - v. 2 slow too due to merge, binarysearch
-        // Just sort it if not sorted yet.
         if (mHeaders.size() == 0) {
             // will throw if mCallback == null
             doSort(mSortFieldName);
         } else {
             mergeItems((T[])items.toArray());
         }
-
         mCallback.onDataSorted(this);
     }
 
     /**
-     * Adds items to the list. null will throw NullPointerException
+     * Adds items to the list.
+     * @param items null will throw NullPointerException
      */
     public void addAll(T... items) {
-        addAll(Arrays.asList(items));
+        if (items.length == 0) {
+            return;
+        }
+        List<T> itemList = Arrays.asList(items);
+        mItemsList.addAll(itemList);
+
+        if (mSortFieldName == null) {
+            if (mCallback != null)
+                mCallback.onUngroupedItemsAdded(itemList);
+            return;
+        }
+
+        // List is grouped
+
+        if (mHeaders.size() == 0) {
+            // will throw if mCallback == null
+            doSort(mSortFieldName);
+        } else {
+            mergeItems(items);
+        }
+        mCallback.onDataSorted(this);
     }
 
     /**
      *  Merge sorted non-empty items to non-empty Headers
      * @param items
      */
-    private  void mergeItems(T[] items){
+    private void mergeItems(T[] items){
         ComparatorGrouper<T> cg = throwIfNoCallback();
         Arrays.sort(items, cg);
-        int hpos = 0;
         int iStart = 0;
         int iEnd = 0;
-        Header<T> h = mHeaders.get(hpos);
+        Header<T> h = mHeaders.get(0);
         for (int i = 0; i < items.length; i++){
             String myGroupTitle = cg.getGroupTitle(items[i]);
             if (!h.getTitle().equals(myGroupTitle)) {
                 h.merge(items, iStart, iEnd, cg);
                 iStart = i;
                 iEnd = i;
-                hpos = binarySearch(myGroupTitle, mHeaders);
+                int hpos = binarySearch(myGroupTitle, mHeaders);
                 if (hpos < 0) {
-                    // new Header with item
+                    // new Header
                     hpos = -1 - hpos;
                     h = new Header<>(myGroupTitle);
                     mHeaders.add(hpos, h);
