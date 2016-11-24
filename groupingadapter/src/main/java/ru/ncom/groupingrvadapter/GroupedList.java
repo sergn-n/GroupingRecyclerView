@@ -79,7 +79,7 @@ public class GroupedList<T> {
         if (hpos >= 0) {
             // found the group new item belongs to
             h = mHeaders.get(hpos);
-            int pos = addItem2Header(item, h, cg);
+            int pos = h.add(item, cg);
             mItems2Headers.put(item, h);
             mCallback.onGroupedItemAdded(hpos, item, pos);
         }
@@ -87,7 +87,7 @@ public class GroupedList<T> {
             // add new header with item
             h = new Header<T>(myGroupTitle);
             mHeaders.add(-1 - hpos, h);
-            h.getChildItemList().add(item);
+            h.add(item, cg);
             mItems2Headers.put(item, h);
             mCallback.onHeaderAdded(h, -1 - hpos);
         }
@@ -139,14 +139,14 @@ public class GroupedList<T> {
         Arrays.sort(items, cg);
         int hpos = 0;
         int iStart = 0;
-        int iLen = 0;
+        int iEnd = 0;
         Header<T> h = mHeaders.get(hpos);
         for (int i = 0; i < items.length; i++){
             String myGroupTitle = cg.getGroupTitle(items[i]);
             if (!h.getTitle().equals(myGroupTitle)) {
-                addItems2Header(items, iStart, iLen, h ,cg);
+                h.merge(items, iStart, iEnd, cg);
                 iStart = i;
-                iLen = 0;
+                iEnd = i;
                 hpos = binarySearch(myGroupTitle, mHeaders);
                 if (hpos < 0) {
                     // new Header with item
@@ -157,31 +157,13 @@ public class GroupedList<T> {
                 else
                     h = mHeaders.get(hpos);
             }
-            iLen++;
+            iEnd++;
             mItems2Headers.put(items[i], h);
         }
-        addItems2Header(items, iStart, iLen, h ,cg);
-    }
-
-    private int addItem2Header(T item, Header h, Comparator cg){
-        List<T> children = h.getChildItemList();
-        int pos = Arrays.binarySearch(children.toArray(), item, cg);
-        if (pos < 0)
-            pos = -1 - pos;
-        children.add(pos, item);
-        return pos;
-    }
-
-    private void addItems2Header(T[] items, int iStart, int iLen, Header h, Comparator cg){
-        List<T> children = h.getChildItemList();
-        for (int i = 0; i < iLen; i++){
-            children.add(items[iStart + i]);
-        }
-        Collections.sort(children, cg);
+        h.merge(items, iStart, iEnd, cg);
     }
 
     public boolean remove(T item){
-
         int tpos = mItemsList.indexOf(item);
         if ( tpos <0 ) {
             return false;
@@ -199,14 +181,14 @@ public class GroupedList<T> {
         Header<T> h = mItems2Headers.get(item);
         mItems2Headers.remove(item);
         int hpos = mHeaders.indexOf(h);
-        if (h.getChildItemList().size() == 1) {
+        if (h.size() == 1) {
             // the only item in group, remove the entire header
             mHeaders.remove(h);
             if (mCallback != null)
                 mCallback.onHeaderRemoved(hpos);
         } else {
-            tpos = h.getChildItemList().indexOf(item);
-            h.getChildItemList().remove(tpos);
+            tpos = h.indexOf(item);
+            h.remove(tpos);
             if (mCallback != null)
                 mCallback.onGroupedItemRemoved(hpos, tpos);
         }
@@ -247,10 +229,16 @@ public class GroupedList<T> {
         mHeaders.add(h);
         if (collapsedTitles != null && collapsedTitles.contains(newTitle))
             h.setCollapsed(true);
+        int iStart = 0;
+        int iEnd = 0;
+        T[] items = (T[]) mItemsList.toArray();
         for (int i = 0; i < mItemsList.size(); i++) {
-            T m = mItemsList.get(i);
+            T m = items[i];
             newTitle = cg.getGroupTitle(m);
             if (!newTitle.equals(h.getTitle())) {
+                h.merge(items, iStart, iEnd, cg);
+                iStart = i;
+                iEnd = i;
                 //TODO sort headers instead ?
                 if (newTitle.compareTo(h.getTitle()) < 0)
                     throw new IllegalArgumentException("Group headers must increase on sorted items");
@@ -259,9 +247,10 @@ public class GroupedList<T> {
                 if (collapsedTitles != null && collapsedTitles.contains(newTitle))
                     h.setCollapsed(true);
             }
-            h.getChildItemList().add(m);
+            iEnd++;
             mItems2Headers.put(m,h);
         }
+        h.merge(items, iStart, iEnd, cg);
         return mHeaders;
     }
 
