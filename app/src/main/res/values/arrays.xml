@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="deleteMovieOptions" >
+        <item name="single">This Movie</item>
+        <item name="all">All Movies in group</item>
+    </array>
+</resources>
