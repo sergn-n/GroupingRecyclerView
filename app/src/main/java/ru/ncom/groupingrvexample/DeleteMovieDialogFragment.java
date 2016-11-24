@@ -17,28 +17,30 @@ import ru.ncom.groupingrvexample.model.Movie;
 public class DeleteMovieDialogFragment extends DialogFragment {
 
     public interface YesNoListener {
-        void onDeleteYes(Movie m);
+        void onDeleteYes(Movie m, int delOption);
 
         void onDeleteDismiss();
     }
 
     private static final String MSG ="MSG";
     private static final String POS ="POS";
+    private static final String DELOPT ="DELOPT";
 
     /**
-     * Creates AlertDoalog to confirm deletion. Activity must implement {@link YesNoListener}
-     * @param message message in AlertDialog
-     * @param position when deletion is confirmed  {@link YesNoListener#onDeleteYes(int position)} is fired.
+     * Creates AlertDialog to confirm deletion. Activity must implement {@link YesNoListener}
+     * @param ctx
+     * @param m what to delete
+     * @param withOptions should create deletion options (item or group)
      * @return
      */
-    public static DeleteMovieDialogFragment createInstance(Context ctx, Movie m){
+    public static DeleteMovieDialogFragment createInstance(Context ctx, Movie m, boolean withOptions){
         String message = String.format(ctx.getString(R.string.delete_movie_dialog_message),
                 m.getTitle(), m.getGenre(), m.getYear());
-
         DeleteMovieDialogFragment f = new DeleteMovieDialogFragment();
         Bundle b = new Bundle();
         b.putString(MSG, message);
         b.putSerializable(POS, m);
+        b.putBoolean(DELOPT, withOptions);
         f.setArguments(b);
         return f;
     };
@@ -61,14 +63,15 @@ public class DeleteMovieDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle b = getArguments();
         final Movie m = (Movie)b.getSerializable(POS);
-        return new AlertDialog.Builder(getActivity())
+        mDeleteOption = 0;
+        AlertDialog.Builder db= new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.delete_movie_dialog_title)
                 .setMessage(b.getString(MSG))
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ((YesNoListener) getActivity()).onDeleteYes(m);
+                        ((YesNoListener) getActivity()).onDeleteYes(m, mDeleteOption);
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -77,9 +80,21 @@ public class DeleteMovieDialogFragment extends DialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
                         DeleteMovieDialogFragment.this.getDialog().cancel();
                     }
-                })
-                .create();
+                });
+        if (b.getBoolean(DELOPT))
+            db.setSingleChoiceItems(R.array.deleteMovieOptions, mDeleteOption,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDeleteOption = which;
+                    }
+                });
+
+        return db.create();
     }
+
+    int mDeleteOption = 0;
+
 
     @Override
     public void onDismiss(DialogInterface dialog) {

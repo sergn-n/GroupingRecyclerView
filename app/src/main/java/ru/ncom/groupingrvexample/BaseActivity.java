@@ -88,7 +88,7 @@ public class BaseActivity extends AppCompatActivity
             mWorker = new WorkerFragment();
             fm.beginTransaction().add(mWorker, WorkerFragment.TAG).commit();
             if (savedInstanceState == null) {
-                // Check intent parameters on first Create
+                // Check intent parameters on first Create and instruct worker
                 Bundle b = getIntent().getExtras();
                 mWorker.setRegenerate(b != null && b.getInt(REGENERATE) != 0);
             }
@@ -193,14 +193,14 @@ public class BaseActivity extends AppCompatActivity
                 }
             }
 
-            void showDeleteDialog(View view,int position){
+            void showDeleteDialog(View view, int position){
                 if ((!mDataActionInProgress)
                         && (mIsSortFinished) // rv is sync. with adapter
                         && mAdapter.getItemViewType(position) == GroupingAdapter.DATAROW) {
                     mDataActionInProgress = true;
                     Log.d(TAG, "Creating delete dialog..");
                     Movie m = (Movie)mAdapter.getAt(position);
-                    DeleteMovieDialogFragment.createInstance(getApplicationContext(), m)
+                    DeleteMovieDialogFragment.createInstance(getApplicationContext(), m, null != mGroupedMovies.getSortFieldName())
                             .show(getSupportFragmentManager(), "tagDeleteMovie");
                 }
             }
@@ -284,14 +284,21 @@ public class BaseActivity extends AppCompatActivity
     // ** DeleteMovieDialogFragment.YesNoListener members **
 
     @Override
-    public void onDeleteYes(Movie m) {
-        Log.d(TAG, "!! Gonna delete Movie =" + m.getTitle());
-        try {
-            mMovieDb.delete(m);
-            mGroupedMovies.remove(m);
-            Log.d(TAG, "Deleted Movie =" + m.getTitle());
-        } catch (IOException e) {
-            Log.e(TAG, "!!FAILED to delete Movie =" + m.getTitle(), e);
+    public void onDeleteYes(Movie m, int delOption) {
+        if (delOption == 0) {
+            Log.d(TAG, "!! Gonna delete Movie =" + m.getTitle());
+            try {
+                mMovieDb.delete(m);
+                mGroupedMovies.remove(m);
+                Log.d(TAG, "Deleted Movie =" + m.getTitle());
+            } catch (IOException e) {
+                Log.e(TAG, "!!FAILED to delete Movie =" + m.getTitle(), e);
+            }
+        }
+        else{
+            String gtitle = mGroupedMovies.getComparatorGrouper().getGroupTitle(m);
+            Log.d(TAG, "!! Gonna delete Group =" + gtitle);
+            mGroupedMovies.removeGroupByTitle(gtitle);
         }
     }
 
