@@ -2,8 +2,9 @@
     <string name="app_name">Grouping Recycler View</string>
     <string name="action_settings">Settings</string>
 
-    <string name="delete_movie_dialog_title">Delete this movie</string>
-    <string name="delete_movie_dialog_message">Title:%1$s (%2$s), %3$s</string>
+    <string name="delete_movie_dialog_title">Delete</string>
+    <string name="delete_movie_dialog_movie">This Movie: %1$s (%2$s), %3$s</string>
+    <string name="delete_movie_dialog_group">All in group: %1$s</string>
 
     <string name="movie_dialog_title">New movie</string>
     <string name="movie_title">Title:</string>

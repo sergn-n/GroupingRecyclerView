@@ -200,7 +200,11 @@ public class BaseActivity extends AppCompatActivity
                     mDataActionInProgress = true;
                     Log.d(TAG, "Creating delete dialog..");
                     Movie m = (Movie)mAdapter.getAt(position);
-                    DeleteMovieDialogFragment.createInstance(getApplicationContext(), m, null != mGroupedMovies.getSortFieldName())
+                    DeleteMovieDialogFragment.createInstance(m,
+                            // when sorted, ask delete group option
+                            null != mGroupedMovies.getSortFieldName()
+                                ? mGroupedMovies.getComparatorGrouper().getGroupTitle(m)
+                                : null)
                             .show(getSupportFragmentManager(), "tagDeleteMovie");
                 }
             }
@@ -298,6 +302,7 @@ public class BaseActivity extends AppCompatActivity
         else{
             String gtitle = mGroupedMovies.getComparatorGrouper().getGroupTitle(m);
             Log.d(TAG, "!! Gonna delete Group =" + gtitle);
+            // do not delete from db
             mGroupedMovies.removeGroupByTitle(gtitle);
         }
     }
