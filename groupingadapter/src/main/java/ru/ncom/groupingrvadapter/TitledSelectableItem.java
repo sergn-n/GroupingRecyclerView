@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class TitledSelectableItem implements Titled, Selectable, Serializable{
 
     private String title = null;
-    private boolean isSelected = false;
+    private transient boolean isSelected = false;
 
     public TitledSelectableItem(String title) {
         this.title = title;
