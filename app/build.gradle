@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "ru.ncom.groupingrecyclerview"
-        minSdkVersion 11
+        minSdkVersion 14 // holo colours
         targetSdkVersion 25
         versionCode 103024
         versionName "1.03.024"
