@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**.
+/**
  * Grouped list of items of T type.
  * Keeps track of item's grouping according to the items' sort key and group headers provided by callback..
  * List is generally not ordered except immediately after sort or addAll method call.
@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class GroupedList<T> {
 
-    private Callback mCallback;
+    private final Callback mCallback;
     public Callback getCallback() {
         return mCallback;
     }
@@ -34,7 +34,7 @@ public class GroupedList<T> {
     private final List<T> mItemsList = new ArrayList<>();
 
     // Sorted item to group header map
-    private Map<T,Header<T>> mItems2Headers = new HashMap<>();
+    private final Map<T,Header<T>> mItems2Headers = new HashMap<>();
 
     // Group headers
     private final List<Header<T>> mHeaders = new ArrayList<>();
@@ -84,7 +84,7 @@ public class GroupedList<T> {
         }
         else {
             // add new header with the item
-            h = new Header<T>(myGroupTitle);
+            h = new Header<>(myGroupTitle);
             mHeaders.add(-1 - hpos, h);
             h.add(item, cg);
             mItems2Headers.put(item, h);
@@ -275,7 +275,7 @@ public class GroupedList<T> {
                 //TODO sort headers instead ?
                 if (newTitle.compareTo(h.getTitle()) < 0)
                     throw new IllegalArgumentException("Group headers must increase on sorted items");
-                h = new Header<T>(newTitle);
+                h = new Header<>(newTitle);
                 mHeaders.add(h);
                 if (collapsedTitles != null && collapsedTitles.contains(newTitle))
                     h.setCollapsed(true);
@@ -312,16 +312,6 @@ public class GroupedList<T> {
         }
         return -middle - (cmp > 0 ? 1 : 2);
     }
-
-    private int findOrAddHeader(String title){
-        int hpos = binarySearch(title, mHeaders);
-        if (hpos < 0) {
-            // new Header
-            mHeaders.add(-1 - hpos, new Header<T>(title));
-        }
-        return hpos;
-    }
-
 
     public ComparatorGrouper<T> getComparatorGrouper(){
         if (mCallback == null)
