@@ -1,19 +1,14 @@
 package ru.ncom.groupingrvadapter;
 
 import android.os.Bundle;
-import android.support.v4.content.res.TypedArrayUtils;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Serg on 11.09.2016.
@@ -104,7 +99,7 @@ public abstract class GroupingAdapter<T> extends RecyclerView.Adapter<RecyclerVi
             TextView v = ((HeaderViewHolder)holder).getTitleView();
             Header<T> h = (Header<T>)item;
             String txt = h.getTitle();
-            txt += (" (" + h.getChildItemList().size() + ")");
+            txt += (" (" + h.size() + ")");
             v.setText(txt);
         }
     }
@@ -136,26 +131,15 @@ public abstract class GroupingAdapter<T> extends RecyclerView.Adapter<RecyclerVi
     //  ** Collapse / expand group by clicking on header. **
 
     private int expandHeader(Header<T> h, int headerPosition) {
-        int count = 0;
-        List<T> childItemList = h.getChildItemList();
-        if (childItemList != null) {
-            count = childItemList.size();
-            for (int i = 0; i < count; i++) {
-                mItemsList.add(headerPosition + i + 1, childItemList.get(i));
-            }
-        }
+        mItemsList.addAll(headerPosition + 1, h.getChildren());
         h.setCollapsed(false);
-        return count;
+        return h.size();
     }
 
     private int collapseHeader(Header<T> h, int headerPosition) {
-        int count = 0;
-        List<T> childItemList = h.getChildItemList();
-        if (childItemList != null) {
-            count = childItemList.size();
-            for (int i = count - 1; i >= 0; i--) {
-                mItemsList.remove(headerPosition + i + 1);
-            }
+        int count = h.size();
+        for (int i = count - 1; i >= 0; i--) {
+            mItemsList.remove(headerPosition + i + 1);
         }
         h.setCollapsed(true);
         return count;
@@ -239,9 +223,7 @@ public abstract class GroupingAdapter<T> extends RecyclerView.Adapter<RecyclerVi
             mItemsList.add(h);
             mHeader2Item[hIdx++] = mItemsList.size() - 1;
             if (!h.isCollapsed())
-                for (T item: h.getChildItemList()) {
-                    mItemsList.add(item);
-                }
+                mItemsList.addAll(h.getChildren());
         }
         notifyDataSetChanged();
     }
@@ -271,9 +253,7 @@ public abstract class GroupingAdapter<T> extends RecyclerView.Adapter<RecyclerVi
 
     @Override
     public void onHeaderAdded(Header<T> h, int pos){
-        List<T> children = h.getChildItemList();
-        int shift = children.size() + 1;
-
+        int shift = h.size() + 1;
         // Update mHeader2Item index
         int[] a;
         if (mHeader2ItemSize == mHeader2Item.length){
@@ -295,11 +275,10 @@ public abstract class GroupingAdapter<T> extends RecyclerView.Adapter<RecyclerVi
         mHeader2ItemSize++;
         mHeader2Item = a;
 
-        // Add items
+        // Add header and children as items
         mItemsList.add(mHeader2Item[pos], h);
-        for (int j = 0; j < children.size(); j++) {
-            mItemsList.add(mHeader2Item[pos] + j + 1, children.get(j));
-        }
+        mItemsList.addAll(mHeader2Item[pos] + 1, h.getChildren());
+
         notifyItemRangeInserted(mHeader2Item[pos], shift);
     }
 

@@ -3,7 +3,6 @@ package ru.ncom.groupingrvadapter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,7 @@ public class GroupedList<T> {
         return mSortFieldName;
     }
 
-    // Unsorted list, original order
+    // All items
     private final List<T> mItemsList = new ArrayList<>();
 
     // Sorted item to group header map
@@ -39,7 +38,7 @@ public class GroupedList<T> {
 
     // Group headers
     private final List<Header<T>> mHeaders = new ArrayList<>();
-    public List<Header<T>> getHeaders() {
+    List<Header<T>> getHeaders() {
         return mHeaders;
     }
 
@@ -69,25 +68,25 @@ public class GroupedList<T> {
                 mCallback.onUngroupedItemsAdded(newItems);
             return;
         }
-        // Add to sorted list
-        if (mCallback == null)
-            throw new IllegalArgumentException("No callback specified, can't get ComparatorGrouper.");
-        ComparatorGrouper cg = mCallback.getComparatorGrouper(mSortFieldName);
+
+        // List is grouped
+
+        ComparatorGrouper cg = getComparatorGrouper();
         String myGroupTitle = cg.getGroupTitle(item);
         int hpos = binarySearch(myGroupTitle, mHeaders);
         Header<T> h;
         if (hpos >= 0) {
-            // found the group new item belongs to
+            // found the group the item belongs to
             h = mHeaders.get(hpos);
-            int pos = addItem2Header(item, h, cg);
+            int pos = h.add(item, cg);
             mItems2Headers.put(item, h);
             mCallback.onGroupedItemAdded(hpos, item, pos);
         }
         else {
-            // add new header with item
+            // add new header with the item
             h = new Header<T>(myGroupTitle);
             mHeaders.add(-1 - hpos, h);
-            h.getChildItemList().add(item);
+            h.add(item, cg);
             mItems2Headers.put(item, h);
             mCallback.onHeaderAdded(h, -1 - hpos);
         }
@@ -108,72 +107,77 @@ public class GroupedList<T> {
             return;
         }
 
-        // - v.1 just sort it
-        doSort(mSortFieldName);
+        // List is grouped
 
-//  - v. 2 slow too due to merge, binarysearch
-//        // Just sort it if not sorted yet.
-//        if (mHeaders.size() == 0) {
-//            // will throw if mCallback == null
-//            doSort(mSortFieldName);
-//        } else {
-//            T[] newItems = (T[])items.toArray();
-//            ComparatorGrouper<T> cg = throwIfNoCallback();
-//            Arrays.sort(newItems, cg);
-//            mergeItems(newItems, cg);
-//        }
-
+        if (mHeaders.size() == 0) {
+            // will throw if mCallback == null
+            doSort(mSortFieldName);
+        } else {
+            mergeItems((T[])items.toArray());
+        }
         mCallback.onDataSorted(this);
     }
 
     /**
-     * Adds items to the list. null will throw NullPointerException
+     * Adds items to the list.
+     * @param items null will throw NullPointerException
      */
     public void addAll(T... items) {
-        addAll(Arrays.asList(items));
+        if (items.length == 0) {
+            return;
+        }
+        List<T> itemList = Arrays.asList(items);
+        mItemsList.addAll(itemList);
+
+        if (mSortFieldName == null) {
+            if (mCallback != null)
+                mCallback.onUngroupedItemsAdded(itemList);
+            return;
+        }
+
+        // List is grouped
+
+        if (mHeaders.size() == 0) {
+            // will throw if mCallback == null
+            doSort(mSortFieldName);
+        } else {
+            mergeItems(items);
+        }
+        mCallback.onDataSorted(this);
     }
 
     /**
-     *  Merge to non empty Headers
+     *  Merge sorted non-empty items to non-empty Headers
      * @param items
-     * @param cg
      */
-    private  void mergeItems(T[] items, ComparatorGrouper<T> cg){
+    private void mergeItems(T[] items){
+        ComparatorGrouper<T> cg = getComparatorGrouper();
+        Arrays.sort(items, cg);
+        int iStart = 0;
+        int iEnd = 0;
         Header<T> h = mHeaders.get(0);
         for (int i = 0; i < items.length; i++){
             String myGroupTitle = cg.getGroupTitle(items[i]);
             if (!h.getTitle().equals(myGroupTitle)) {
+                h.merge(items, iStart, iEnd, cg);
+                iStart = iEnd = i;
                 int hpos = binarySearch(myGroupTitle, mHeaders);
                 if (hpos < 0) {
-                    // new Header with item
+                    // new Header
+                    hpos = -1 - hpos;
                     h = new Header<>(myGroupTitle);
-                    mHeaders.add(-1 - hpos, h);
-                    h.getChildItemList().add(items[i]);
+                    mHeaders.add(hpos, h);
                 }
-                else {
-                    // add to existing Header
-                    addItem2Header(items[i], h ,cg);
-                }
+                else
+                    h = mHeaders.get(hpos);
             }
-            else{
-                // add to existing Header
-                addItem2Header(items[i], h ,cg);
-            }
+            iEnd++;
             mItems2Headers.put(items[i], h);
         }
-    }
-
-    private int addItem2Header(T item, Header h, Comparator cg){
-        List<T> children = h.getChildItemList();
-        int pos = Arrays.binarySearch(children.toArray(), item, cg);
-        if (pos < 0)
-            pos = -1 - pos;
-        children.add(pos, item);
-        return pos;
+        h.merge(items, iStart, iEnd, cg);
     }
 
     public boolean remove(T item){
-
         int tpos = mItemsList.indexOf(item);
         if ( tpos <0 ) {
             return false;
@@ -191,17 +195,36 @@ public class GroupedList<T> {
         Header<T> h = mItems2Headers.get(item);
         mItems2Headers.remove(item);
         int hpos = mHeaders.indexOf(h);
-        if (h.getChildItemList().size() == 1) {
+        if (h.size() == 1) {
             // the only item in group, remove the entire header
             mHeaders.remove(h);
             if (mCallback != null)
                 mCallback.onHeaderRemoved(hpos);
         } else {
-            tpos = h.getChildItemList().indexOf(item);
-            h.getChildItemList().remove(tpos);
+            tpos = h.indexOf(item);
+            h.remove(tpos);
             if (mCallback != null)
                 mCallback.onGroupedItemRemoved(hpos, tpos);
         }
+        return true;
+    }
+
+    /**
+     *
+     * @param title
+     * @return true - title was found and grouped was removed; false - not found.
+     */
+    public boolean removeGroupByTitle(String title){
+        int hpos = binarySearch(title, mHeaders);
+        if (hpos < 0)
+            return false;
+        Header<T> h = mHeaders.remove(hpos);
+        for (T m: h.getChildren()) {
+            mItems2Headers.remove(m);
+            mItemsList.remove(m);
+        }
+        if (mCallback != null)
+            mCallback.onHeaderRemoved(hpos);
         return true;
     }
 
@@ -230,7 +253,7 @@ public class GroupedList<T> {
         if (mItemsList.size() == 0)
             return mHeaders;
 
-        ComparatorGrouper cg = throwIfNoCallback();
+        ComparatorGrouper cg = getComparatorGrouper();
         if (mItemsList.size() > 1)
             Collections.sort(mItemsList, cg);
         // First Header
@@ -239,10 +262,16 @@ public class GroupedList<T> {
         mHeaders.add(h);
         if (collapsedTitles != null && collapsedTitles.contains(newTitle))
             h.setCollapsed(true);
+        int iStart = 0;
+        int iEnd = 0;
+        T[] items = (T[]) mItemsList.toArray();
         for (int i = 0; i < mItemsList.size(); i++) {
-            T m = mItemsList.get(i);
+            T m = items[i];
             newTitle = cg.getGroupTitle(m);
             if (!newTitle.equals(h.getTitle())) {
+                h.merge(items, iStart, iEnd, cg);
+                iStart = i;
+                iEnd = i;
                 //TODO sort headers instead ?
                 if (newTitle.compareTo(h.getTitle()) < 0)
                     throw new IllegalArgumentException("Group headers must increase on sorted items");
@@ -251,9 +280,10 @@ public class GroupedList<T> {
                 if (collapsedTitles != null && collapsedTitles.contains(newTitle))
                     h.setCollapsed(true);
             }
-            h.getChildItemList().add(m);
+            iEnd++;
             mItems2Headers.put(m,h);
         }
+        h.merge(items, iStart, iEnd, cg);
         return mHeaders;
     }
 
@@ -283,7 +313,17 @@ public class GroupedList<T> {
         return -middle - (cmp > 0 ? 1 : 2);
     }
 
-    private ComparatorGrouper<T> throwIfNoCallback(){
+    private int findOrAddHeader(String title){
+        int hpos = binarySearch(title, mHeaders);
+        if (hpos < 0) {
+            // new Header
+            mHeaders.add(-1 - hpos, new Header<T>(title));
+        }
+        return hpos;
+    }
+
+
+    public ComparatorGrouper<T> getComparatorGrouper(){
         if (mCallback == null)
             throw new IllegalArgumentException("No callback specified, can't get ComparatorGrouper.");
         return mCallback.getComparatorGrouper(mSortFieldName);

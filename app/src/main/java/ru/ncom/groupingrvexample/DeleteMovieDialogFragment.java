@@ -2,7 +2,6 @@ package ru.ncom.groupingrvexample;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -17,28 +16,25 @@ import ru.ncom.groupingrvexample.model.Movie;
 public class DeleteMovieDialogFragment extends DialogFragment {
 
     public interface YesNoListener {
-        void onDeleteYes(Movie m);
+        void onDeleteYes(Movie m, int delOption);
 
         void onDeleteDismiss();
     }
 
-    private static final String MSG ="MSG";
     private static final String POS ="POS";
+    private static final String DELOPT ="DELOPT";
 
     /**
-     * Creates AlertDoalog to confirm deletion. Activity must implement {@link YesNoListener}
-     * @param message message in AlertDialog
-     * @param position when deletion is confirmed  {@link YesNoListener#onDeleteYes(int position)} is fired.
+     * Creates AlertDialog to confirm deletion. Activity must implement {@link YesNoListener}
+     * @param m movie what to delete
+     * @param groupTitle when not null options (delete item or group) will be shown
      * @return
      */
-    public static DeleteMovieDialogFragment createInstance(Context ctx, Movie m){
-        String message = String.format(ctx.getString(R.string.delete_movie_dialog_message),
-                m.getTitle(), m.getGenre(), m.getYear());
-
+    public static DeleteMovieDialogFragment createInstance(Movie m, String groupTitle){
         DeleteMovieDialogFragment f = new DeleteMovieDialogFragment();
         Bundle b = new Bundle();
-        b.putString(MSG, message);
         b.putSerializable(POS, m);
+        b.putString(DELOPT, groupTitle);
         f.setArguments(b);
         return f;
     };
@@ -61,15 +57,33 @@ public class DeleteMovieDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle b = getArguments();
         final Movie m = (Movie)b.getSerializable(POS);
-        return new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.delete_movie_dialog_title)
-                .setMessage(b.getString(MSG))
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+        mDeleteOption = 0;
+        String msgMovie = String.format(getString(R.string.delete_movie_dialog_movie),
+                m.getTitle(), m.getGenre(), m.getYear());
+        AlertDialog.Builder db = new AlertDialog.Builder(getActivity())
+                .setTitle(getString(R.string.delete_movie_dialog_title) ) ;
+        if (b.getString(DELOPT) != null) {
+            String[] arrOptions = new String[]{
+                    msgMovie, String.format(getString(R.string.delete_movie_dialog_group), b.getString(DELOPT))
+            };
+            db.setSingleChoiceItems(arrOptions, mDeleteOption,
+                    new DialogInterface.OnClickListener() {
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ((YesNoListener) getActivity()).onDeleteYes(m);
-                    }
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mDeleteOption = which;
+                        }
+                    });
+        }
+        else {
+            db.setMessage(msgMovie);
+        }
+        return db.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ((YesNoListener) getActivity()).onDeleteYes(m, mDeleteOption);
+            }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 
@@ -80,6 +94,9 @@ public class DeleteMovieDialogFragment extends DialogFragment {
                 })
                 .create();
     }
+
+    int mDeleteOption = 0;
+
 
     @Override
     public void onDismiss(DialogInterface dialog) {
